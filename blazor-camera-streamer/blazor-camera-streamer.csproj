@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <RootNamespace>blazor_camera_streamer</RootNamespace>
+    <RootNamespace>BlazorCameraStreamer</RootNamespace>
     <Version>0.0.0.0</Version>
     <Authors>Baltermia Clopath</Authors>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
@@ -11,6 +11,7 @@
     <Description>A Blazor Component library that adds a simple to use camera-streaming functionality which you can use with C#.</Description>
     <Copyright>Copyright (c) 2021 Baltermia Clopath</Copyright>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <AssemblyName>BlazorCameraStreamer</AssemblyName>
 
   </PropertyGroup>
 

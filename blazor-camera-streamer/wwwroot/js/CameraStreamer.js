@@ -1,5 +1,5 @@
-var blazor_camera_streamer;
-(function (blazor_camera_streamer) {
+var BlazorCameraStreamer;
+(function (BlazorCameraStreamer) {
     var Scripts;
     (function (Scripts) {
         var CameraStreamer = /** @class */ (function () {
@@ -7,6 +7,6 @@ var blazor_camera_streamer;
             }
             return CameraStreamer;
         }());
-    })(Scripts = blazor_camera_streamer.Scripts || (blazor_camera_streamer.Scripts = {}));
-})(blazor_camera_streamer || (blazor_camera_streamer = {}));
+    })(Scripts = BlazorCameraStreamer.Scripts || (BlazorCameraStreamer.Scripts = {}));
+})(BlazorCameraStreamer || (BlazorCameraStreamer = {}));
 //# sourceMappingURL=CameraStreamer.js.map

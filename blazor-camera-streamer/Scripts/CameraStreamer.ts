@@ -1,4 +1,4 @@
-namespace blazor_camera_streamer.Scripts {
+namespace BlazorCameraStreamer.Scripts {
     class CameraStreamer {
 
     }

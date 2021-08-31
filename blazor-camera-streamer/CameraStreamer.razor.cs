@@ -1,4 +1,4 @@
-namespace blazor_camera_streamer
+namespace BlazorCameraStreamer
 {
     public partial class CameraStreamer
     {
