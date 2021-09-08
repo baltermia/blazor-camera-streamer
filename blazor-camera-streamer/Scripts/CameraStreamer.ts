@@ -1,5 +1,9 @@
 namespace BlazorCameraStreamer.Scripts {
-    class CameraStreamer {
+    export class CameraStreamerInterop {
+        private constructor() { }
 
+        public static CreateInstance(): CameraStreamerInterop {
+            return new CameraStreamerInterop();
+        }
     }
 }

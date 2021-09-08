@@ -2,11 +2,15 @@ var BlazorCameraStreamer;
 (function (BlazorCameraStreamer) {
     var Scripts;
     (function (Scripts) {
-        var CameraStreamer = /** @class */ (function () {
-            function CameraStreamer() {
+        var CameraStreamerInterop = (function () {
+            function CameraStreamerInterop() {
             }
-            return CameraStreamer;
+            CameraStreamerInterop.CreateInstance = function () {
+                return new CameraStreamerInterop();
+            };
+            return CameraStreamerInterop;
         }());
+        Scripts.CameraStreamerInterop = CameraStreamerInterop;
     })(Scripts = BlazorCameraStreamer.Scripts || (BlazorCameraStreamer.Scripts = {}));
 })(BlazorCameraStreamer || (BlazorCameraStreamer = {}));
 //# sourceMappingURL=CameraStreamer.js.map

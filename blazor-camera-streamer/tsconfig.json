@@ -3,12 +3,11 @@
   "compilerOptions": {
     "noImplicitAny": false,
     "noEmitOnError": true,
-    "removeComments": false,
+    "removeComments": true,
     "sourceMap": true,
-    "target": "es5",
+    "target": "ES5",
+    "module": "ES2015",
     "outDir": "wwwroot/js"
   },
-  "include": [
-    "Scripts/**/*"
-  ]
+  "include": [ "Scripts/CameraStreamer.ts" ]
 }
