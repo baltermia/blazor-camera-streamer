@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BlazorCameraStreamer
 {
-    public partial class CameraStreamer : ComponentBase, ICameraStreamerModel // ICameraStreamerModel interface is used to simulate mutliple inheritance, as CameraStreamer already extends ComponentBase by default
+    public partial class CameraStreamer : ICameraStreamerModel // ICameraStreamerModel interface is used to simulate mutliple inheritance, as CameraStreamer already extends ComponentBase by default
     {
         [Inject]
         private IJSRuntime JSRuntime { get; set; }
@@ -29,6 +29,12 @@ namespace BlazorCameraStreamer
         [Parameter]
         public EventCallback<string> OnFrame { get; set; }
 
+        [Parameter]
+        public string CameraID { get; set; } = null;
+
+        [Parameter]
+        public bool Autostart { get; set; } = false;
+
         protected ElementReference VideoRef { get; set; }
 
         protected CameraStreamerController streamerApi;
@@ -43,6 +49,9 @@ namespace BlazorCameraStreamer
             }
 
             await base.OnAfterRenderAsync(firstRender);
+
+            if (Autostart)
+                await StartAsync();
         }
 
         public async Task LoadAsync()
@@ -50,13 +59,13 @@ namespace BlazorCameraStreamer
             await streamerApi.InitializeAsync(VideoRef, Width, Height);
         }
 
-        public async Task StartAsync(string camera = null) => await streamerApi.StartAsync(camera);
+        public async Task StartAsync(string camera = null) => await streamerApi.StartAsync(camera ?? CameraID);
 
         public async Task<MediaDeviceInfoModel[]> GetCameraDevicesAsync() => await streamerApi.GetCameraDevicesAsync();
 
         public async Task StopAsync() => await streamerApi.StopAsync();
 
-        public Task ChangeCameraAsync(string newId) => streamerApi.ChangeCameraAsync(newId);
+        public Task ChangeCameraAsync(string newId) => streamerApi.ChangeCameraAsync(CameraID = newId);
 
         public Task<bool> GetCameraAccessAsync(bool ask = true) => streamerApi.GetCameraAccessAsync(ask);
 
