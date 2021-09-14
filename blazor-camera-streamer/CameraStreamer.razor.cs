@@ -1,12 +1,11 @@
 using BlazorCameraStreamer.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace BlazorCameraStreamer
 {
-    public partial class CameraStreamer
+    public partial class CameraStreamer : ICameraStreamerModel // ICameraStreamerModel interface is used to simulate mutliple inheritance, as CameraStreamer already extends ComponentBase by default
     {
         [Inject]
         private IJSRuntime JSRuntime { get; set; }
@@ -21,29 +20,43 @@ namespace BlazorCameraStreamer
         public string Class { get; set; } = string.Empty;
 
         [Parameter]
+        public int Width { get; set; } = 480;
+
+        [Parameter]
+        public int Height { get; set; } = 270;
+
+        [Parameter]
         public EventCallback<string> OnFrame { get; set; }
 
         protected ElementReference VideoRef { get; set; }
 
-        protected CameraStreamerAPI streamerApi;
+        protected CameraStreamerController streamerApi;
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
             {
-                streamerApi = new CameraStreamerAPI(JSRuntime);
+                streamerApi = new CameraStreamerController(JSRuntime);
 
-                await ReloadAsync();
+                await LoadAsync();
             }
 
             await base.OnAfterRenderAsync(firstRender);
         }
 
-        public async Task ReloadAsync()
+        public async Task LoadAsync()
         {
-            await streamerApi.InitializeAsync();
+            await streamerApi.InitializeAsync(VideoRef, Width, Height);
         }
 
-        public async Task<IEnumerable<MediaDeviceInfo>> GetMediaDeviceInfoAsync() => await streamerApi.GetCameraDevicesAsync();
+        public async Task StartAsync(string camera) => await streamerApi.StartAsync(camera);
+
+        public async Task<MediaDeviceInfoModel[]> GetCameraDevicesAsync() => await streamerApi.GetCameraDevicesAsync();
+
+        public async Task StopAsync() => await streamerApi.StopAsync();
+
+        public Task ChangeCameraAsync(string newId) => streamerApi.ChangeCameraAsync(newId);
+
+        public Task<bool> GetCameraAccessAsync(bool ask = true) => streamerApi.GetCameraAccessAsync(ask);
     }
 }
