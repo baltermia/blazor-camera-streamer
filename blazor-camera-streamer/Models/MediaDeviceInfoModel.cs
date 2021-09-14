@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents the MediaDeviceInfo interface from Typescript
     /// </summary>
-    public class MediaDeviceInfo
+    public class MediaDeviceInfoModel
     {
         /// <summary>
         /// Unique ID of the device
