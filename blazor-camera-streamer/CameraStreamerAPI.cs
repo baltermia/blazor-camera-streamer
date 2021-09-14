@@ -2,10 +2,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace BlazorCameraStreamer
@@ -13,11 +9,11 @@ namespace BlazorCameraStreamer
     /// <summary>
     /// Communication logic between ts/js and c#
     /// </summary>
-    public class CameraStreamerAPI : IAsyncDisposable
+    public class CameraStreamerAPI : ICameraStreamerModel, IAsyncDisposable
     {
         public const string JS_STATIC = "BlazorCameraStreamer.Scripts.CameraStreamerInterop";
         public readonly IJSRuntime JSRuntime;
-
+        
         private IJSObjectReference JSObject;
         public bool IsInitialized { get; private set; } = false;
 
@@ -26,7 +22,7 @@ namespace BlazorCameraStreamer
             JSRuntime = runtime;
         }
 
-        public async Task InitializeAsync()
+        public async Task InitializeAsync(ElementReference videoReference, int width = 480, int height = 270)
         {
             if (IsInitialized)
             {
@@ -35,7 +31,34 @@ namespace BlazorCameraStreamer
 
             JSObject = await JSRuntime.InvokeAsync<IJSObjectReference>(JS_STATIC + ".createInstance");
 
+            await JSObject.InvokeVoidAsync("init", videoReference, DotNetObjectReference.Create(this), width, height);
+
             IsInitialized = true;
+        }
+
+        public async Task StartAsync(string camera)
+        {
+            await JSObject.InvokeVoidAsync("start", camera);
+        }
+
+        public async Task StopAsync()
+        {
+            await JSObject.InvokeVoidAsync("stop");
+        }
+
+        public async Task ChangeCameraAsync(string newId)
+        {
+            await JSObject.InvokeVoidAsync("changeCamera", newId);
+        }
+
+        public async Task<bool> GetCameraAccessAsync(bool ask = true)
+        {
+            return await JSObject.InvokeAsync<bool>("getCameraAccess", ask);
+        }
+
+        public async Task<MediaDeviceInfoModel[]> GetCameraDevicesAsync()
+        {
+            return await GetCameraDevicesAsync(JSRuntime);
         }
 
         public async ValueTask DisposeAsync()
@@ -46,14 +69,9 @@ namespace BlazorCameraStreamer
             }
         }
 
-        public static async Task<IEnumerable<MediaDeviceInfo>> GetCameraDevicesAsync(IJSRuntime runtime)
+        public static async Task<MediaDeviceInfoModel[]> GetCameraDevicesAsync(IJSRuntime runtime)
         {
-            return await runtime.InvokeAsync<MediaDeviceInfo[]>(JS_STATIC + ".getCameraDeviceList");
-        }
-
-        public async Task<IEnumerable<MediaDeviceInfo>> GetCameraDevicesAsync()
-        {
-            return await GetCameraDevicesAsync(JSRuntime);
+            return await runtime.InvokeAsync<MediaDeviceInfoModel[]>(JS_STATIC + ".getCameraDeviceList");
         }
     }
 }
