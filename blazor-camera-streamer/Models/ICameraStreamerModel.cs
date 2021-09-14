@@ -1,11 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace BlazorCameraStreamer.Models
 {
     /// <summary>
     /// This interface is used to simulate multiple inheritance
     /// </summary>
-    public interface ICameraStreamerModel
+    public interface ICameraStreamerModel : IAsyncDisposable
     {
         /// <summary>
         /// Starts the camera stream

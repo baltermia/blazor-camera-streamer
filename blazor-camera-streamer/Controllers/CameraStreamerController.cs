@@ -1,7 +1,6 @@
 ﻿using BlazorCameraStreamer.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using System;
 using System.Threading.Tasks;
 using System.Linq;
 
@@ -10,7 +9,7 @@ namespace BlazorCameraStreamer
     /// <summary>
     /// Communication logic between ts/js and c#
     /// </summary>
-    public class CameraStreamerController : ICameraStreamerModel, IAsyncDisposable
+    public class CameraStreamerController : ICameraStreamerModel
     {
         public const string JS_STATIC = "BlazorCameraStreamer.Scripts.CameraStreamerInterop";
         public readonly IJSRuntime JSRuntime;

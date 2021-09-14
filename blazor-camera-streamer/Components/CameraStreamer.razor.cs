@@ -1,11 +1,12 @@
 using BlazorCameraStreamer.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using System;
 using System.Threading.Tasks;
 
 namespace BlazorCameraStreamer
 {
-    public partial class CameraStreamer : ICameraStreamerModel // ICameraStreamerModel interface is used to simulate mutliple inheritance, as CameraStreamer already extends ComponentBase by default
+    public partial class CameraStreamer : ComponentBase, ICameraStreamerModel // ICameraStreamerModel interface is used to simulate mutliple inheritance, as CameraStreamer already extends ComponentBase by default
     {
         [Inject]
         private IJSRuntime JSRuntime { get; set; }
@@ -58,5 +59,7 @@ namespace BlazorCameraStreamer
         public Task ChangeCameraAsync(string newId) => streamerApi.ChangeCameraAsync(newId);
 
         public Task<bool> GetCameraAccessAsync(bool ask = true) => streamerApi.GetCameraAccessAsync(ask);
+
+        public async ValueTask DisposeAsync() => await streamerApi.DisposeAsync();
     }
 }
