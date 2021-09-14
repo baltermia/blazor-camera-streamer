@@ -49,7 +49,7 @@ namespace BlazorCameraStreamer
             await streamerApi.InitializeAsync(VideoRef, Width, Height);
         }
 
-        public async Task StartAsync(string camera) => await streamerApi.StartAsync(camera);
+        public async Task StartAsync(string camera = null) => await streamerApi.StartAsync(camera);
 
         public async Task<MediaDeviceInfoModel[]> GetCameraDevicesAsync() => await streamerApi.GetCameraDevicesAsync();
 

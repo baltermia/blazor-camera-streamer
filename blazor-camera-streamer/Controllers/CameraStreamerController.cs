@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using System;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace BlazorCameraStreamer
 {
@@ -36,9 +37,9 @@ namespace BlazorCameraStreamer
             IsInitialized = true;
         }
 
-        public async Task StartAsync(string camera)
+        public async Task StartAsync(string camera = null)
         {
-            await JSObject.InvokeVoidAsync("start", camera);
+            await JSObject.InvokeVoidAsync("start", camera ?? (await GetCameraDevicesAsync()).FirstOrDefault()?.DeviceId);
         }
 
         public async Task StopAsync()

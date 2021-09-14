@@ -10,8 +10,8 @@ namespace BlazorCameraStreamer.Models
         /// <summary>
         /// Starts the camera stream
         /// </summary>
-        /// <param name="camera">DeviceID of the camera</param>
-        public Task StartAsync(string camera);
+        /// <param name="camera">DeviceID of the camera, if left empty the first camera found will be used</param>
+        public Task StartAsync(string camera = null);
 
         /// <summary>
         /// Stops the camera stream
