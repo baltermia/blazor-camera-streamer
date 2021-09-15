@@ -9,11 +9,6 @@ namespace BlazorCameraStreamer.Scripts {
         private _video: HTMLVideoElement;
 
         /**
-         * Reference to the calling dotnet object. This is used to invoke the C# methods (used for callbacks/events)
-         */
-        private _apiRef: any;
-
-        /**
          * Object of the current stream (webcam)
          */
         private _stream: MediaStream;
@@ -29,6 +24,21 @@ namespace BlazorCameraStreamer.Scripts {
         private _streamActive: boolean = false;
 
         /**
+         * Reference to the calling dotnet object. This is used to invoke the C# methods (used for callbacks/events)
+         */
+        private _dotnetObject: any;
+
+        /**
+         * The name of the method that should be invoked when a frame is recieved 
+         */
+        private _invokeIdentifier: string;
+
+        /**
+         * Whether the provided method should be invoked when a frame is recived 
+         */
+        private _callInvoke: boolean;
+
+        /**
          * Returns a new instance of the CameraStreamerInterop class
          */
         public static createInstance(): CameraStreamerInterop {
@@ -41,9 +51,11 @@ namespace BlazorCameraStreamer.Scripts {
          * @param api Reference to the dotnet object that should recieve callbacks
          * @param camera Device-string (id) of the camera that should be used for the stream
          */
-        public init(video: HTMLVideoElement, api: any, width: number = 480, height: number = 270): void{
+        public init(video: HTMLVideoElement, callOnFrameInvoke: boolean, api: any = null, onFrameInvokeName: string = null, width: number = 640, height: number = 360): void {
             this._video = video;
-            this._apiRef = api;
+            this._dotnetObject = api;
+            this._invokeIdentifier = onFrameInvokeName;
+            this._callInvoke = this._invokeIdentifier === null || this._dotnetObject === null ? false : callOnFrameInvoke;
 
             this._constraints = {
                 audio: false,
@@ -72,13 +84,16 @@ namespace BlazorCameraStreamer.Scripts {
                 // Add the stream of the chosen camera as src on the video element
                 this._video.srcObject = this._stream;
 
-                // Todo: Implement callback to _apiRef on each frame with data
+                // Add with anonymous function, not assigning directly (neccesarry, otherwise the method isn't in the scope anymore, e.g. can't access properties etc.)
+                this._video.ontimeupdate = (ev: Event) => this.onFrame(ev);
             });
 
             // Start the video element as soon as all metadata is loaded (this is needed as we get the mediastream object asynchronously in the code above)
-            this._video.onloadedmetadata = async e => await this._video.play();
+            this._video.onloadedmetadata = async (ev: Event) => {
+                await this._video.play();
 
-            this._streamActive = true;
+                this._streamActive = true;
+            }
         }
 
         /**
@@ -86,12 +101,15 @@ namespace BlazorCameraStreamer.Scripts {
          */
         public stop(): void {
             // Use pause method as there's no stop method in the HTMLVideoElement interface
-            this._video.pause();
+            this._video?.pause();
 
             // Stop all tracks of the stream (without doing this the stream would still be processed and the browser will show that the camera is still in use by the site)
-            this._stream.getTracks().forEach(t => t.stop());
+            this._stream?.getTracks().forEach(t => t.stop());
 
             this._streamActive = false;
+
+            if (this._video !== null)
+                this._video.ontimeupdate = null;
         }
 
         /**
@@ -107,15 +125,15 @@ namespace BlazorCameraStreamer.Scripts {
         }
 
         /**
-         * Checks if the site has access to the camera(s)
-         * @param ask wether the method should ask the user if he wants to grant access if the access is currently denied
+         * Checks if the site has access to the camera(s) and asks for it if the access is currently denied
          * @returns whether the site can access the camera
          */
-        public static getCameraAccess(ask: boolean = true): boolean {
-            // navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-
-            // Todo: finish getCameraAccess
-
+        public static async getCameraAccess(): Promise<boolean> {
+            try {
+                await navigator.mediaDevices.getUserMedia({ video: true })
+            } catch {
+                return false;
+            }
             return true;
         }
 
@@ -138,9 +156,37 @@ namespace BlazorCameraStreamer.Scripts {
 
             // Set variables to null
             this._video = null;
-            this._apiRef = null;
+            this._dotnetObject = null;
             this._stream = null;
             this._constraints = null;
+        }
+
+        /**
+         * Invokes the dotnet object on the provided method with the given data
+         * @param data The string the dotnet method recieves
+         */
+        private invokeDotnetObject(data: string): void {
+            if (this._callInvoke) this._dotnetObject.invokeMethodAsync(this._invokeIdentifier, data);
+        }
+
+        /**
+         * Handles the videos ontimeupdate event and invokes the dotnet object with the img 
+         */
+        private onFrame(ev: Event): void { // Only working solution to get the images as other ways are not supported yet
+            if (!this._callInvoke || !this._streamActive) return;
+
+            let canvas: HTMLCanvasElement = document.createElement("canvas");
+
+            canvas.width = this._constraints.video["width"];
+            canvas.height = this._constraints.video["height"];
+
+            // Draw the current image of the stream on the canvas
+            canvas.getContext("2d").drawImage(this._video, 0, 0);
+
+            // Get the iamge as 64base string
+            let img: string = canvas.toDataURL("image/png");
+
+            this.invokeDotnetObject(img);
         }
     }
 }
