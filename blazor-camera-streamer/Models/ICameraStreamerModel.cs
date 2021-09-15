@@ -25,10 +25,10 @@ namespace BlazorCameraStreamer.Models
         public Task ChangeCameraAsync(string newId);
 
         /// <summary>
-        /// Returns whether the program has access to the camera (and asks for access by default)
+        /// Returns whether the site has access to the camera and asks the user for permission if not
         /// </summary>
-        /// <param name="ask">Whether the method should ask for access if the access is currently denied (defualt is true)</param>
-        public Task<bool> GetCameraAccessAsync(bool ask = true);
+        /// <returns>Whether the site has access to the camera(s)</returns>
+        public Task<bool> GetCameraAccessAsync();
 
         /// <summary>
         /// Gets all camera devices (no audio) as MediaDeviceInfo and returns them as an array
