@@ -10,7 +10,7 @@
     <RepositoryUrl>https://github.com/speyck/blazor-camera-streamer/</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Description>A Blazor Component library that adds a easy-to-use camera-streaming functionality which you can use with C#.</Description>
-	<PackageReleaseNotes><PackageReleaseNotes/>
+    <PackageReleaseNotes></PackageReleaseNotes>
     <Copyright>Copyright (c) 2021 Baltermia Clopath</Copyright>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <AssemblyName>BlazorCameraStreamer</AssemblyName>
