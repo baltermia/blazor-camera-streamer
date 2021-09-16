@@ -1,5 +1,17 @@
 namespace BlazorCameraStreamer.Scripts {
     /**
+     * Interface representing a DotNetObjekt
+     */
+    interface DotNetObjectReference {
+        /**
+         * Invokes the method specified with the identifier on the dotnet object with the given arguments
+         * @param identifier The identifier of the JSInvokable method in the dotnet object
+         * @param args The arguments that are given when invoking the method
+         */
+        invokeMethodAsync(identifier: string, ...args: any): any;
+    }
+
+    /**
      * This class is designed to work with Microsoft.JSInterop in C# Blazor and helps streaming webcams in a video element
      */
     export class CameraStreamerInterop {
@@ -26,7 +38,7 @@ namespace BlazorCameraStreamer.Scripts {
         /**
          * Reference to the calling dotnet object. This is used to invoke the C# methods (used for callbacks/events)
          */
-        private _dotnetObject: any;
+        private _dotnetObject: DotNetObjectReference;
 
         /**
          * The name of the method that should be invoked when a frame is recieved 
@@ -51,7 +63,7 @@ namespace BlazorCameraStreamer.Scripts {
          * @param api Reference to the dotnet object that should recieve callbacks
          * @param camera Device-string (id) of the camera that should be used for the stream
          */
-        public init(video: HTMLVideoElement, callOnFrameInvoke: boolean, api: any = null, onFrameInvokeName: string = null, width: number = 640, height: number = 360): void {
+        public init(video: HTMLVideoElement, callOnFrameInvoke: boolean, api: DotNetObjectReference = null, onFrameInvokeName: string = null, width: number = 640, height: number = 360): void {
             this._video = video;
             this._dotnetObject = api;
             this._invokeIdentifier = onFrameInvokeName;
