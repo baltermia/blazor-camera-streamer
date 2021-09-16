@@ -127,7 +127,7 @@ You can then do anything with this `Bitmap` object. E.g. in the [speyck/blazor-a
 
 **Style (Id & Class)**
 
-The component also supports the standard `Style`, `Id` and `Class` parameters. They are applied directly on the `\<video\>` element in the component (the only element the component has) so they should function very well.
+The component also supports the standard `Style`, `Id` and `Class` parameters. They are applied directly on the `<video>` element in the component (the only element the component has) so they should function very well.
 
 In the code above I use the `Style` parameter to set the display size of the stream.
 
