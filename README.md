@@ -12,7 +12,7 @@ A Blazor Component library that adds a simple to use camera-streaming functional
 </div>
 
 ## Features
-  - Stream cameras in a html `\<video\>` element
+  - Stream cameras in a html `<video>` element
   - Retrieve each frame of the stream on a callback
   - Get a list of all avaliable cameras
   - Ask the user for access to cameras
