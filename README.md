@@ -119,7 +119,7 @@ As soon as the component is completely rendered, this callback is invoked - alth
 
 **OnFrame**
 
-This is one of the key features of the component that other similar components lack. On each Frame of the stream, this callback is invoked with the base64 string of the image. You can easily convert this data to a `System.Drawing`.Bitmap` by using the following code (keep in my that you need to have the `System.Drawing.Common` package install):
+This is one of the key features of the component that other similar components lack. On each Frame of the stream, this callback is invoked with the base64 string of the image. You can easily convert this data to a `System.Drawing.Bitmap` by using the following code (keep in my that you need to have the `System.Drawing.Common` package install):
 ```csharp
 Bitmap bmp = new(new MemoryStream(Convert.FromBase64String(data)));
 ```
