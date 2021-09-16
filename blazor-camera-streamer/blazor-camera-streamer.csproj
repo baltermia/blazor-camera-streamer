@@ -38,5 +38,9 @@
     <None Include="wwwroot\js\CameraStreamer.js" />
     <None Include="wwwroot\js\CameraStreamer.js.map" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="..\LICENSE.md" Pack="true" PackagePath="" />
+  </ItemGroup>
 
 </Project>
