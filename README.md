@@ -147,6 +147,6 @@ The C# code is explained in the code itself so there's no further explanation ne
 
 I think that should sum it up pretty well.
 
-If you have any question, feature requests or anything else related to the project feel free to contact me anytime. I'm very keen on this project and want to maintain it as long as possible.
+If you have any question, feature requests or anything else related to the project feel free to contact me anytime. I'm very keen on this project and want to maintain it for a long time.
 
  
