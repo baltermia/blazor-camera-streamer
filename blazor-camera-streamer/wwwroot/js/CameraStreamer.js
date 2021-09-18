@@ -157,4 +157,3 @@ var BlazorCameraStreamer;
         Scripts.CameraStreamerInterop = CameraStreamerInterop;
     })(Scripts = BlazorCameraStreamer.Scripts || (BlazorCameraStreamer.Scripts = {}));
 })(BlazorCameraStreamer || (BlazorCameraStreamer = {}));
-//# sourceMappingURL=CameraStreamer.js.map
