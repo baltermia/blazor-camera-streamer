@@ -3,8 +3,7 @@
         "target": "ES6",
         "module": "CommonJS",
         "lib": [ "ES2020", "DOM" ],
-        "rootDir": "Scripts",
-        "outDir": "wwwroot/js",
+        "rootDir": "wwwroot",
         "incremental": true,
         "esModuleInterop": true
     }
