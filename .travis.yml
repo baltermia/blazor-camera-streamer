@@ -1,8 +1,8 @@
 language: csharp
-solution: blazor-camera-streamer.csproj
+solution: blazor-camera-streamer.sln
 dotnet: 5.0
 install:
-  - nuget restore blazor-camera-streamer.csproj
+  - nuget restore blazor-camera-streamer.sln
 script:
   - dotnet build --no-restore
   - dotnet test --no-build --verbosity normal 
