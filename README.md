@@ -25,7 +25,7 @@ Implementations of the library can be found in the following projects:
   - [speyck/blazor-antdesign-test](https://github.com/speyck/blazor-antdesign-test) - Serverside Blazor
 
 ## Browser Support
-No tests done yet - will follow soon.
+The component currently only works on Blazor Serverside due to a bug. Webassembly will be supported asap.
 
 ## Installation Guide
 
@@ -80,6 +80,8 @@ If you want a to use most of the features of the component, it would look more l
 And here's the C# code:
 ```csharp
 CameraStreamer CameraStreamerReference;
+
+string cameraId = null;
 
 private async void OnRenderedHandler()
 {
