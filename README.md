@@ -81,6 +81,8 @@ And here's the C# code:
 ```csharp
 CameraStreamer CameraStreamerReference;
 
+string cameraId = null;
+
 private async void OnRenderedHandler()
 {
     // Check camera-access or ask user, if it's not allowed currently
