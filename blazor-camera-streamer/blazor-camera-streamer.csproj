@@ -15,6 +15,7 @@
 		<Copyright>Copyright (c) 2021 Baltermia Clopath</Copyright>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 		<AssemblyName>BlazorCameraStreamer</AssemblyName>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 
 		<RestoreAdditionalProjectSources>
 			https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json;
