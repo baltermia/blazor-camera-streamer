@@ -4,7 +4,7 @@
 		<TargetFramework>net5.0</TargetFramework>
 		<RootNamespace>BlazorCameraStreamer</RootNamespace>
 		<PackageId>BlazorCameraStreamer</PackageId>
-		<Version>2.0.1</Version>
+		<Version>2.0.3</Version>
 		<Authors>Baltermia Clopath</Authors>
 		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
 		<RepositoryUrl>https://github.com/speyck/blazor-camera-streamer/</RepositoryUrl>
@@ -15,7 +15,7 @@
 		<Copyright>Copyright (c) 2021 Baltermia Clopath</Copyright>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 		<AssemblyName>BlazorCameraStreamer</AssemblyName>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageReadmeFile>NUGET-README.md</PackageReadmeFile>
 
 		<RestoreAdditionalProjectSources>
 			https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json;
@@ -42,6 +42,7 @@
 	<ItemGroup>
 		<None Include="..\LICENSE.md" Pack="true" PackagePath="" />
 		<None Include="..\README.md" Pack="true" PackagePath="" />
+		<None Include="..\NUGET-README.md" Pack="true" PackagePath="" />
 		<None Include="wwwroot\js\CameraStreamer.js" />
 	</ItemGroup>
 
