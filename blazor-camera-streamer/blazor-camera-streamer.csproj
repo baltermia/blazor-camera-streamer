@@ -8,7 +8,7 @@
 		<Authors>Baltermia Clopath</Authors>
 		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
 		<RepositoryUrl>https://github.com/speyck/blazor-camera-streamer/</RepositoryUrl>
-		<PackageProjectUrl>https://dev.azure.com/baltermia/BlazorCameraStreamer</PackageProjectUrl>
+		<PackageProjectUrl>https://speyck.github.io/blazor-camera-streamer</PackageProjectUrl>
 		<RepositoryType>git</RepositoryType>
 		<Description>A Blazor Component library that adds a easy-to-use camera-streaming functionality which you can use with C#.</Description>
 		<PackageReleaseNotes></PackageReleaseNotes>
