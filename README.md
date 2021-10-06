@@ -3,7 +3,7 @@
   
 [![Nuget](https://img.shields.io/nuget/v/BlazorCameraStreamer?style=flat-square)](https://www.nuget.org/packages/BlazorCameraStreamer/)
 [![BlazorCameraStreamer](https://img.shields.io/nuget/dt/BlazorCameraStreamer.svg?style=flat-square)](https://www.nuget.org/packages/BlazorCameraStreamer/)
-[![CodeFactor](https://www.codefactor.io/repository/github/speyck/blazor-camera-streamer/badge?style=flat-square)](https://www.codefactor.io/repository/github/speyck/barcodereader)
+[![CodeFactor](https://img.shields.io/codefactor/grade/github/speyck/blazor-camera-streamer?style=flat-square)](https://www.codefactor.io/repository/github/speyck/barcodereader)
 [![Build Status](https://img.shields.io/travis/speyck/blazor-camera-streamer.svg?branch=main&style=flat-square)](https://app.travis-ci.com/speyck/blazor-camera-streamer)
 [![Code Climate](https://img.shields.io/codeclimate/maintainability/speyck/blazor-camera-streamer?style=flat-square)](https://codeclimate.com/github/speyck/blazor-camera-streamer)
 [![Total alerts](https://img.shields.io/lgtm/alerts/github/speyck/blazor-camera-streamer?style=flat-square)](https://lgtm.com/projects/g/speyck/blazor-camera-streamer/alerts/)
