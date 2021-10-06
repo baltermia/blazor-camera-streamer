@@ -6,6 +6,7 @@
 [![Build Status](https://img.shields.io/travis/speyck/blazor-camera-streamer.svg?branch=main&style=flat-square)](https://app.travis-ci.com/speyck/blazor-camera-streamer)
 [![Code Climate](https://img.shields.io/codeclimate/maintainability/speyck/blazor-camera-streamer?style=flat-square)](https://codeclimate.com/github/speyck/blazor-camera-streamer)
 [![Total alerts](https://img.shields.io/lgtm/alerts/github/speyck/blazor-camera-streamer?style=flat-square)](https://lgtm.com/projects/g/speyck/blazor-camera-streamer/alerts/)
+[![Devops](https://img.shields.io/static/v1?label=devops&message=link&color=blue&style=flat-square)](https://dev.azure.com/baltermia/BlazorCameraStreamer)
 
 A Blazor Component library that adds a simple to use camera-streaming functionality which you can use with C#.
 
