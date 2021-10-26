@@ -100,7 +100,7 @@ private async void OnRenderedHandler()
 
 private void OnFrameHandler(string data)
 {
-    // Remove the suffix added by javascriot
+    // Remove the suffix added by javascript
     data = data[(data.IndexOf(',') + 1)..];
 
     // Convert the base64 string to a System.Drawing.Bitmap
