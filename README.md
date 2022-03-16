@@ -26,7 +26,7 @@ Implementations of the library can be found in the following projects:
   - [speyck/blazor-antdesign-test](https://github.com/speyck/blazor-antdesign-test) - Serverside Blazor
 
 ## Browser Support
-The component currently only works on Blazor Serverside due to a bug. Webassembly will be supported asap.
+The component works both on Serverside and WASM Blazor.
 
 ## Installation Guide
 
