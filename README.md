@@ -3,10 +3,10 @@
   
 [![Nuget](https://img.shields.io/nuget/v/BlazorCameraStreamer?style=flat-square)](https://www.nuget.org/packages/BlazorCameraStreamer/)
 [![BlazorCameraStreamer](https://img.shields.io/nuget/dt/BlazorCameraStreamer.svg?style=flat-square)](https://www.nuget.org/packages/BlazorCameraStreamer/)
-[![CodeFactor](https://img.shields.io/codefactor/grade/github/speyck/blazor-camera-streamer?style=flat-square)](https://www.codefactor.io/repository/github/speyck/barcodereader)
-[![Build Status](https://img.shields.io/travis/speyck/blazor-camera-streamer.svg?branch=main&style=flat-square)](https://app.travis-ci.com/speyck/blazor-camera-streamer)
-[![Code Climate](https://img.shields.io/codeclimate/maintainability/speyck/blazor-camera-streamer?style=flat-square)](https://codeclimate.com/github/speyck/blazor-camera-streamer)
-[![Total alerts](https://img.shields.io/lgtm/alerts/github/speyck/blazor-camera-streamer?style=flat-square)](https://lgtm.com/projects/g/speyck/blazor-camera-streamer/alerts/)
+[![CodeFactor](https://img.shields.io/codefactor/grade/github/baltermia/blazor-camera-streamer?style=flat-square)](https://www.codefactor.io/repository/github/baltermia/barcodereader)
+[![Build Status](https://img.shields.io/travis/baltermia/blazor-camera-streamer.svg?branch=main&style=flat-square)](https://app.travis-ci.com/baltermia/blazor-camera-streamer)
+[![Code Climate](https://img.shields.io/codeclimate/maintainability/baltermia/blazor-camera-streamer?style=flat-square)](https://codeclimate.com/github/baltermia/blazor-camera-streamer)
+[![Total alerts](https://img.shields.io/lgtm/alerts/github/baltermia/blazor-camera-streamer?style=flat-square)](https://lgtm.com/projects/g/baltermia/blazor-camera-streamer/alerts/)
 [![Devops](https://img.shields.io/static/v1?label=devops&message=link&color=blue&style=flat-square)](https://dev.azure.com/baltermia/BlazorCameraStreamer)
   
 A Blazor Component library that adds a simple to use camera-streaming functionality which you can use with C#.
@@ -22,8 +22,8 @@ A Blazor Component library that adds a simple to use camera-streaming functional
   
 ## Examples
 Implementations of the library can be found in the following projects:
-  - [blazor-camera-streamer.Demo](https://github.com/speyck/blazor-camera-streamer/tree/main/blazor-camera-streamer.Demo) (this repo) - Blazor Webassembly
-  - [speyck/blazor-antdesign-test](https://github.com/speyck/blazor-antdesign-test) - Serverside Blazor
+  - [blazor-camera-streamer.Demo](https://github.com/baltermia/blazor-camera-streamer/tree/main/blazor-camera-streamer.Demo) (this repo) - Blazor Webassembly
+  - [baltermia/blazor-antdesign-test](https://github.com/baltermia/blazor-antdesign-test) - Serverside Blazor
 
 ## Browser Support
 The component works both on Serverside and WASM Blazor.
@@ -126,7 +126,7 @@ This is one of the key features of the component that other similar components l
 ```csharp
 Bitmap bmp = new(new MemoryStream(Convert.FromBase64String(data)));
 ```
-You can then do anything with this `Bitmap` object. E.g. in the [speyck/blazor-antdesign-test](https://github.com/speyck/blazor-antdesign-test) project listed in the [Examples](#examples) above uses the object to decode barcodes. 
+You can then do anything with this `Bitmap` object. E.g. use the object to decode barcodes. 
 
 **Style (Id & Class)**
 
