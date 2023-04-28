@@ -104,6 +104,11 @@ namespace BlazorCameraStreamer
             }
         }
 
+        public ValueTask<string> GetCurrentFrameAsync()
+        {
+            return JSObject.InvokeAsync<string>("getCurrentFrame");
+        }
+
         /// <summary>
         /// Gets all camera devices (no audio) as MediaDeviceInfo and returns them as an array
         /// </summary>

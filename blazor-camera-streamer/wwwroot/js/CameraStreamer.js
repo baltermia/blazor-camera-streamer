@@ -61,8 +61,9 @@ var BlazorCameraStreamer;
                     this._stream = mediaStream;
                     // Add the stream of the chosen camera as src on the video element
                     this._video.srcObject = this._stream;
-                    // Add with anonymous function, not assigning directly (neccesarry, otherwise the method isn't in the scope anymore, e.g. can't access properties etc.)
-                    this._video.ontimeupdate = (ev) => this.onFrame(ev);
+                    if (this._callInvoke)
+                        // Add with anonymous function, not assigning directly (neccesarry, otherwise the method isn't in the scope anymore, e.g. can't access properties etc.)
+                        this._video.ontimeupdate = (ev) => this.onFrame(ev);
                 });
                 // Start the video element as soon as all metadata is loaded (this is needed as we get the mediastream object asynchronously in the code above)
                 this._video.onloadedmetadata = (ev) => __awaiter(this, void 0, void 0, function* () {
@@ -119,6 +120,9 @@ var BlazorCameraStreamer;
                     // Filters out all videoinputs (the streamer doesn't support audio)
                     .filter(d => d.kind === "videoinput"));
             }
+            getCurrentFrame() {
+                return Promise.resolve(this.lastFrame);
+            }
             /**
              * Releases all resources and stops the stream. The object must be reinitialized before it can be used again
              */
@@ -150,8 +154,8 @@ var BlazorCameraStreamer;
                 // Draw the current image of the stream on the canvas
                 canvas.getContext("2d").drawImage(this._video, 0, 0);
                 // Get the iamge as 64base string
-                let img = canvas.toDataURL("image/png");
-                this.invokeDotnetObject(img);
+                this.lastFrame = canvas.toDataURL("image/png");
+                this.invokeDotnetObject(this.lastFrame);
             }
         }
         Scripts.CameraStreamerInterop = CameraStreamerInterop;

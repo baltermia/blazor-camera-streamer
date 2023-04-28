@@ -51,6 +51,11 @@ namespace BlazorCameraStreamer.Scripts {
         private _callInvoke: boolean;
 
         /**
+         * The last streamed frame-data
+         */
+        private lastFrame: string;
+
+        /**
          * Returns a new instance of the CameraStreamerInterop class
          */
         public static createInstance(): CameraStreamerInterop {
@@ -96,8 +101,9 @@ namespace BlazorCameraStreamer.Scripts {
                 // Add the stream of the chosen camera as src on the video element
                 this._video.srcObject = this._stream;
 
-                // Add with anonymous function, not assigning directly (neccesarry, otherwise the method isn't in the scope anymore, e.g. can't access properties etc.)
-                this._video.ontimeupdate = (ev: Event) => this.onFrame(ev);
+                if (this._callInvoke)
+                    // Add with anonymous function, not assigning directly (neccesarry, otherwise the method isn't in the scope anymore, e.g. can't access properties etc.)
+                    this._video.ontimeupdate = (ev: Event) => this.onFrame(ev);
             });
 
             // Start the video element as soon as all metadata is loaded (this is needed as we get the mediastream object asynchronously in the code above)
@@ -160,6 +166,10 @@ namespace BlazorCameraStreamer.Scripts {
                     .filter(d => d.kind === "videoinput"));
         }
 
+        public getCurrentFrame(): Promise<string> {
+            return Promise.resolve(this.lastFrame);
+        }
+
         /**
          * Releases all resources and stops the stream. The object must be reinitialized before it can be used again
          */
@@ -196,9 +206,9 @@ namespace BlazorCameraStreamer.Scripts {
             canvas.getContext("2d").drawImage(this._video, 0, 0);
 
             // Get the iamge as 64base string
-            let img: string = canvas.toDataURL("image/png");
+            this.lastFrame = canvas.toDataURL("image/png");
 
-            this.invokeDotnetObject(img);
+            this.invokeDotnetObject(this.lastFrame);
         }
     }
 }
