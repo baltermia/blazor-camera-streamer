@@ -113,6 +113,9 @@ namespace BlazorCameraStreamer
         public async Task<MediaDeviceInfoModel[]> GetCameraDevicesAsync() =>
             await streamerApi.GetCameraDevicesAsync();
 
+        public ValueTask<string> GetCurrentFrameAsync() =>
+            streamerApi.GetCurrentFrameAsync();
+
         public async ValueTask DisposeAsync() => 
             // Check null for streamerApi as otherwise a exception is thrown on page-refresh
             await (streamerApi?.DisposeAsync() ?? ValueTask.CompletedTask);

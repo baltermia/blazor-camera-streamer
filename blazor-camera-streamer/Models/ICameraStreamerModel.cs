@@ -35,5 +35,11 @@ namespace BlazorCameraStreamer.Models
         /// </summary>
         /// <returns>An array of all cameras as MediaDeviceInfo</returns>
         public Task<MediaDeviceInfoModel[]> GetCameraDevicesAsync();
+        
+        /// <summary>
+        /// Gets the current camera-frame that is streamed
+        /// </summary>
+        /// <returns>The current frame in the camera</returns>
+        public ValueTask<string> GetCurrentFrameAsync();
     }
 }
