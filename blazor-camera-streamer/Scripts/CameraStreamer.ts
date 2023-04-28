@@ -53,7 +53,7 @@ namespace BlazorCameraStreamer.Scripts {
         /**
          * The last streamed frame-data
          */
-        private lastFrame: string;
+        private _lastFrame: string;
 
         /**
          * Returns a new instance of the CameraStreamerInterop class
@@ -167,7 +167,9 @@ namespace BlazorCameraStreamer.Scripts {
         }
 
         public getCurrentFrame(): Promise<string> {
-            return Promise.resolve(this.lastFrame);
+            return (this._callInvoke && this._streamActive) ?
+                Promise.resolve(this._lastFrame) :
+                Promise.resolve(this.getCurrentCanvasFrame());
         }
 
         /**
@@ -181,6 +183,7 @@ namespace BlazorCameraStreamer.Scripts {
             this._dotnetObject = null;
             this._stream = null;
             this._constraints = null;
+            this._lastFrame = null;
         }
 
         /**
@@ -188,15 +191,11 @@ namespace BlazorCameraStreamer.Scripts {
          * @param data The string the dotnet method recieves
          */
         private invokeDotnetObject(data: string): void {
-            if (this._callInvoke) this._dotnetObject.invokeMethodAsync(this._invokeIdentifier, data);
+            if (this._callInvoke)
+                this._dotnetObject.invokeMethodAsync(this._invokeIdentifier, data);
         }
 
-        /**
-         * Handles the videos ontimeupdate event and invokes the dotnet object with the img 
-         */
-        private onFrame(ev: Event): void { // Only working solution to get the images as other ways are not supported yet
-            if (!this._callInvoke || !this._streamActive) return;
-
+        private getCurrentCanvasFrame(): string {
             let canvas: HTMLCanvasElement = document.createElement("canvas");
 
             canvas.width = this._constraints.video["width"];
@@ -206,9 +205,15 @@ namespace BlazorCameraStreamer.Scripts {
             canvas.getContext("2d").drawImage(this._video, 0, 0);
 
             // Get the iamge as 64base string
-            this.lastFrame = canvas.toDataURL("image/png");
+            return canvas.toDataURL("image/png");
+        }
 
-            this.invokeDotnetObject(this.lastFrame);
+        /**
+         * Handles the videos ontimeupdate event and invokes the dotnet object with the img 
+         */
+        private onFrame(ev: Event): void { // Only working solution to get the images as other ways are not supported yet
+            if (this._callInvoke && this._streamActive)
+                this.invokeDotnetObject(this._lastFrame = this.getCurrentCanvasFrame());
         }
     }
 }

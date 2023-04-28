@@ -121,7 +121,9 @@ var BlazorCameraStreamer;
                     .filter(d => d.kind === "videoinput"));
             }
             getCurrentFrame() {
-                return Promise.resolve(this.lastFrame);
+                return (this._callInvoke && this._streamActive) ?
+                    Promise.resolve(this._lastFrame) :
+                    Promise.resolve(this.getCurrentCanvasFrame());
             }
             /**
              * Releases all resources and stops the stream. The object must be reinitialized before it can be used again
@@ -133,6 +135,7 @@ var BlazorCameraStreamer;
                 this._dotnetObject = null;
                 this._stream = null;
                 this._constraints = null;
+                this._lastFrame = null;
             }
             /**
              * Invokes the dotnet object on the provided method with the given data
@@ -142,20 +145,21 @@ var BlazorCameraStreamer;
                 if (this._callInvoke)
                     this._dotnetObject.invokeMethodAsync(this._invokeIdentifier, data);
             }
-            /**
-             * Handles the videos ontimeupdate event and invokes the dotnet object with the img
-             */
-            onFrame(ev) {
-                if (!this._callInvoke || !this._streamActive)
-                    return;
+            getCurrentCanvasFrame() {
                 let canvas = document.createElement("canvas");
                 canvas.width = this._constraints.video["width"];
                 canvas.height = this._constraints.video["height"];
                 // Draw the current image of the stream on the canvas
                 canvas.getContext("2d").drawImage(this._video, 0, 0);
                 // Get the iamge as 64base string
-                this.lastFrame = canvas.toDataURL("image/png");
-                this.invokeDotnetObject(this.lastFrame);
+                return canvas.toDataURL("image/png");
+            }
+            /**
+             * Handles the videos ontimeupdate event and invokes the dotnet object with the img
+             */
+            onFrame(ev) {
+                if (this._callInvoke && this._streamActive)
+                    this.invokeDotnetObject(this._lastFrame = this.getCurrentCanvasFrame());
             }
         }
         Scripts.CameraStreamerInterop = CameraStreamerInterop;
