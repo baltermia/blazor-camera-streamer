@@ -4,9 +4,8 @@
 [![Nuget](https://img.shields.io/nuget/v/BlazorCameraStreamer?style=flat-square)](https://www.nuget.org/packages/BlazorCameraStreamer/)
 [![BlazorCameraStreamer](https://img.shields.io/nuget/dt/BlazorCameraStreamer.svg?style=flat-square)](https://www.nuget.org/packages/BlazorCameraStreamer/)
 [![CodeFactor](https://img.shields.io/codefactor/grade/github/baltermia/blazor-camera-streamer?style=flat-square)](https://www.codefactor.io/repository/github/baltermia/barcodereader)
-[![Build Status](https://img.shields.io/travis/baltermia/blazor-camera-streamer.svg?branch=main&style=flat-square)](https://app.travis-ci.com/baltermia/blazor-camera-streamer)
+[![Build Status](https://app.travis-ci.com/baltermia/blazor-camera-streamer.svg?branch=main)](https://app.travis-ci.com/baltermia/blazor-camera-streamer)
 [![Code Climate](https://img.shields.io/codeclimate/maintainability/baltermia/blazor-camera-streamer?style=flat-square)](https://codeclimate.com/github/baltermia/blazor-camera-streamer)
-[![Total alerts](https://img.shields.io/lgtm/alerts/github/baltermia/blazor-camera-streamer?style=flat-square)](https://lgtm.com/projects/g/baltermia/blazor-camera-streamer/alerts/)
 [![Devops](https://img.shields.io/static/v1?label=devops&message=link&color=blue&style=flat-square)](https://dev.azure.com/baltermia/BlazorCameraStreamer)
   
 A Blazor Component library that adds a simple to use camera-streaming functionality which you can use with C#.
