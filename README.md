@@ -17,6 +17,7 @@ A Blazor Component library that adds a simple to use camera-streaming functional
   - Retrieve each frame of the stream on a callback
   - Get a list of all avaliable cameras
   - Ask the user for access to cameras
+  - Get the currently streamed frame
 
  The library works only with video-devices, there's no support for audio devices (at least for now)
   
@@ -144,7 +145,11 @@ This parameter starts the stream on Reload automatically. This is either trigger
 
 ---
 
-The C# code is explained in the code itself so there's no further explanation needed.
+If you dont want to use the `OnFrame`-Callback, you can receive frames individually by calling the `GetCurrentFrameAsync`-Method:
+
+```csharp
+string imageData = await CameraStreamerReference.GetCurrentFrameAsync();
+```
 
 ## Finish
 
