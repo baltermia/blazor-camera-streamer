@@ -20,7 +20,7 @@ A Blazor Component library that adds a simple to use camera-streaming functional
   
 ## Examples
 Implementations of the library can be found in the following projects:
-  - [blazor-camera-streamer.Demo](https://github.com/speyck/blazor-camera-streamer/tree/main/blazor-camera-streamer.Demo) (this repo) - Blazor Webassembly
+  - [BlazorCameraStreamer.Demo.WASM](https://github.com/speyck/blazor-camera-streamer/tree/main/BlazorCameraStreamer.Demo.WASM) (this repo) - Blazor Webassembly
   - [speyck/blazor-antdesign-test](https://github.com/speyck/blazor-antdesign-test) - Serverside Blazor
 
 ## Browser Support

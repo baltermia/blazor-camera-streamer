@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\blazor-camera-streamer\blazor-camera-streamer.csproj" />
+    <ProjectReference Include="..\BlazorCameraStreamer\BlazorCameraStreamer.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,7 +31,7 @@
   </ItemGroup>
 
   <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
-    <Copy SourceFiles="$(ProjectDir)..\blazor-camera-streamer\wwwroot\js\CameraStreamer.js" DestinationFolder="$(OutDir)\wwwroot\js" />
+    <Copy SourceFiles="$(ProjectDir)..\BlazorCameraStreamer\wwwroot\js\CameraStreamer.js" DestinationFolder="$(OutDir)\wwwroot\js" />
   </Target>
 
 </Project>

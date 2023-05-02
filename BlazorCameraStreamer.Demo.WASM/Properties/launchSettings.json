@@ -16,7 +16,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "blazor-camera-streamer.Demo": {
+    "BlazorCameraStreamer.Demo.WASM": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "launchBrowser": true,
