@@ -98,9 +98,11 @@ namespace BlazorCameraStreamer
 
         public async ValueTask DisposeAsync()
         {
-            if (IsInitialized)
+            if (IsInitialized && JSObject != null)
             {
                 await JSObject.InvokeVoidAsync("dispose");
+
+                await JSObject.DisposeAsync();
             }
         }
 
