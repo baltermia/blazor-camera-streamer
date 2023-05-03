@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{9288B1DE-0
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{ECEBF0AE-66E5-4E03-B7A7-E9C112D58F48}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorCameraStreamer.Demo.Serverside", "BlazorCameraStreamer.Demo.Serverside\BlazorCameraStreamer.Demo.Serverside.csproj", "{D9F2DFFC-1051-4610-A27B-4332F6F04950}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,10 @@ Global
 		{4DEA05A5-C4A9-4922-921B-FD0F4D5FD5B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4DEA05A5-C4A9-4922-921B-FD0F4D5FD5B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4DEA05A5-C4A9-4922-921B-FD0F4D5FD5B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9F2DFFC-1051-4610-A27B-4332F6F04950}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9F2DFFC-1051-4610-A27B-4332F6F04950}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9F2DFFC-1051-4610-A27B-4332F6F04950}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9F2DFFC-1051-4610-A27B-4332F6F04950}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -32,6 +38,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{FE923286-C8BF-4DA6-9711-B5A189218D10} = {9288B1DE-0AE9-402D-91D7-C5E84C0BBC5A}
 		{4DEA05A5-C4A9-4922-921B-FD0F4D5FD5B7} = {ECEBF0AE-66E5-4E03-B7A7-E9C112D58F48}
+		{D9F2DFFC-1051-4610-A27B-4332F6F04950} = {ECEBF0AE-66E5-4E03-B7A7-E9C112D58F48}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {45A8FCB7-2B6F-44F8-8375-4D286964801B}
