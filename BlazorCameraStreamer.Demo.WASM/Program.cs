@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace blazor_camera_streamer.Demo
+namespace BlazorCameraStreamer.Demo.WASM
 {
     public class Program
     {
