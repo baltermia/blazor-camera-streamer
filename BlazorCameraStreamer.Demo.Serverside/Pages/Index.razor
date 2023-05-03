@@ -1,0 +1,80 @@
+﻿@page "/"
+
+<p>FrameCount: @frameCount</p>
+
+<CameraStreamer @ref=CameraStreamerReference
+                Width=1920
+                Height=1080
+                OnRendered=OnRenderedHandler
+                OnFrame=OnFrameHandler
+                Style="width: 480px; height: 270px;"
+                CameraID=@cameraId
+                Autostart />
+
+<div>
+    <button @onclick=Start>
+        Start
+    </button>
+    <button @onclick=Stop>
+        Stop
+    </button>
+</div>
+
+<button @onclick=GetCurrentFrame>
+    Get Current Frame
+</button>
+
+<br />
+
+@if (!string.IsNullOrEmpty(imageData))
+{
+    <img src=@imageData
+         style="width: 480px; height: 270px;" />
+}
+
+@code
+{
+    private CameraStreamer CameraStreamerReference;
+
+    private string cameraId = null;
+
+    private int frameCount;
+
+    private string imageData;
+
+    private async void OnRenderedHandler()
+    {
+        frameCount = 0;
+
+        // Check camera-access or ask user, if it's not allowed currently
+        if (await CameraStreamerReference.GetCameraAccessAsync())
+        {
+            // Reloading re-initializes the stream and starts the
+            // stream automatically if the Autostart parameter is set
+            await CameraStreamerReference.ReloadAsync();
+
+            // If Autostart is not set, you have to manually start the stream again
+            /* await CameraStreamerReference.StartAsync(); */
+        }
+    }
+
+    private async void Start()
+    {
+        await CameraStreamerReference.StartAsync();
+    }
+
+    private async void Stop()
+    {
+        await CameraStreamerReference.StopAsync();
+    }
+
+    private void OnFrameHandler(string _)
+    {
+        ++frameCount;
+    }
+
+    private async void GetCurrentFrame()
+    {
+        imageData = await CameraStreamerReference.GetCurrentFrameAsync();
+    }
+}
