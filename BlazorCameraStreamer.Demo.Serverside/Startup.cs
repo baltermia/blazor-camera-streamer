@@ -20,7 +20,8 @@ namespace BlazorCameraStreamer.Demo.Serverside
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
-            services.AddServerSideBlazor();
+            services.AddServerSideBlazor()
+                    .AddHubOptions(o => o.MaximumReceiveMessageSize = 100_000_000);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
