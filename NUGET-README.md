@@ -1,12 +1,8 @@
-# BlazorCameraStreamer
-  
+# 📷 BlazorCameraStreamer
+
 [![Nuget](https://img.shields.io/nuget/v/BlazorCameraStreamer?style=flat-square)](https://www.nuget.org/packages/BlazorCameraStreamer/)
 [![BlazorCameraStreamer](https://img.shields.io/nuget/dt/BlazorCameraStreamer.svg?style=flat-square)](https://www.nuget.org/packages/BlazorCameraStreamer/)
-[![CodeFactor](https://img.shields.io/codefactor/grade/github/speyck/blazor-camera-streamer?style=flat-square)](https://www.codefactor.io/repository/github/speyck/barcodereader)
-[![Build Status](https://img.shields.io/travis/speyck/blazor-camera-streamer.svg?branch=main&style=flat-square)](https://app.travis-ci.com/speyck/blazor-camera-streamer)
-[![Code Climate](https://img.shields.io/codeclimate/maintainability/speyck/blazor-camera-streamer?style=flat-square)](https://codeclimate.com/github/speyck/blazor-camera-streamer)
-[![Total alerts](https://img.shields.io/lgtm/alerts/github/speyck/blazor-camera-streamer?style=flat-square)](https://lgtm.com/projects/g/speyck/blazor-camera-streamer/alerts/)
-[![Devops](https://img.shields.io/static/v1?label=devops&message=link&color=blue&style=flat-square)](https://dev.azure.com/baltermia/BlazorCameraStreamer)
+![Build Status](https://img.shields.io/github/actions/workflow/status/baltermia/blazor-camera-streamer/dotnet.yml?style=flat-square)
 
 A Blazor Component library that adds a simple to use camera-streaming functionality which you can use with C#.
 
@@ -15,16 +11,19 @@ A Blazor Component library that adds a simple to use camera-streaming functional
   - Retrieve each frame of the stream on a callback
   - Get a list of all avaliable cameras
   - Ask the user for access to cameras
+  - Get the currently streamed frame
 
  The library works only with video-devices, there's no support for audio devices (at least for now)
+
+ 💡 Want a new feature to be implemented, or you found/have any issues?  Create a [new Issue](https://github.com/baltermia/blazor-cookies/issues/new/choose).
   
 ## Examples
 Implementations of the library can be found in the following projects:
-  - [BlazorCameraStreamer.Demo.WASM](https://github.com/speyck/blazor-camera-streamer/tree/main/BlazorCameraStreamer.Demo.WASM) (this repo) - Blazor Webassembly
-  - [speyck/blazor-antdesign-test](https://github.com/speyck/blazor-antdesign-test) - Serverside Blazor
+  - [BlazorCameraStreamer.Demo.WASM](https://github.com/baltermia/blazor-camera-streamer/tree/main/BlazorCameraStreamer.Demo.WASM) - Blazor Webassembly
+  - [BlazorCameraStreamer.Demo.Serverside](https://github.com/baltermia/blazor-camera-streamer/tree/main/BlazorCameraStreamer.Demo.Serverside) - Blazor Server
 
 ## Browser Support
-The component currently only works on Blazor Serverside due to a bug. Webassembly will be supported asap.
+The component works both on Serverside and WASM Blazor.
 
 ## Installation Guide
 
@@ -50,6 +49,25 @@ Depending on your type of project, the file you have to add this is either
 It doesn't really matter if you add the tag in the `<head>` or `<body>` block.
 
 If you're unsure on where to put it, look it up in the [Examples](#examples) listed above.
+
+### Serverside Image-Size Restriction
+
+**⚠️ This step is crucial if you want to use the CameraStreamer on ServerSide Blazor ⚠️**
+
+The data from the JavaScript-Interop is sent through SignalR to the Server, where your C# Code handles the received data. SignalR has a image cap of 32KB (which is tiny, smaller than 150x150 pixels).
+
+This restriction can be bypassed though. In your `[ProjectName].Startup.ConfigureServices` method, change the following line:
+
+```csharp
+services.AddServerSideBlazor()
+        .AddHubOptions(o => o.MaximumReceiveMessageSize = 100_000_000); // add this
+```
+
+The `MaximumReceiveMessageSize` value indicates the maximum allowed number of bytes that can be sent through SignalR. It could also be set to `long.MaxValue`, to entirely max out the restriction. 
+
+100'000'000 has no significant meaning, it's just a general cap. As an example, a 3-Channel 8-Bit 1920x1080 image has the following size: `3 * 1920 * 1080 = 6'220'800 Bytes` (this calculation does not take image-compression into account).
+
+**⚠️ BlazorCameraStreamer can be used in ServerSide Blazor. In general though, it is not recommended to use on ServerSide, since a lot of data is sent through SignalR which can cause network delays. There is a reason, why Microsoft set the default limit to only 32KB. ⚠️**
 
 ## How to use
 
@@ -124,7 +142,7 @@ This is one of the key features of the component that other similar components l
 ```csharp
 Bitmap bmp = new(new MemoryStream(Convert.FromBase64String(data)));
 ```
-You can then do anything with this `Bitmap` object. E.g. in the [speyck/blazor-antdesign-test](https://github.com/speyck/blazor-antdesign-test) project listed in the [Examples](#examples) above uses the object to decode barcodes. 
+You can then do anything with this `Bitmap` object. E.g. use the object to decode barcodes. 
 
 **Style (Id & Class)**
 
@@ -142,12 +160,8 @@ This parameter starts the stream on Reload automatically. This is either trigger
 
 ---
 
-The C# code is explained in the code itself so there's no further explanation needed.
+If you dont want to use the `OnFrame`-Callback, you can receive frames individually by calling the `GetCurrentFrameAsync`-Method:
 
-## Finish
-
-I think that should sum it up pretty well.
-
-If you have any question, feature requests or anything else related to the project feel free to contact me anytime. I'm very keen on this project and want to maintain it for a long time.
-
- 
+```csharp
+string imageData = await CameraStreamerReference.GetCurrentFrameAsync();
+```
