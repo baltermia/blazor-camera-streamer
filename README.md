@@ -19,8 +19,8 @@ A Blazor Component library that adds a simple to use camera-streaming functional
   
 ## Examples
 Implementations of the library can be found in the following projects:
-  - [BlazorCameraStreamer.Demo.WASM](https://github.com/baltermia/blazor-camera-streamer/tree/main/BlazorCameraStreamer.Demo.WASM) (this repo) - Blazor Webassembly
-  - [baltermia/blazor-antdesign-test](https://github.com/baltermia/blazor-antdesign-test) - Serverside Blazor
+  - [BlazorCameraStreamer.Demo.WASM](https://github.com/baltermia/blazor-camera-streamer/tree/main/BlazorCameraStreamer.Demo.WASM) - Blazor Webassembly
+  - [BlazorCameraStreamer.Demo.Serverside](https://github.com/baltermia/blazor-camera-streamer/tree/main/BlazorCameraStreamer.Demo.Serverside) - Blazor Server
 
 ## Browser Support
 The component works both on Serverside and WASM Blazor.
