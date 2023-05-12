@@ -1,6 +1,6 @@
-<h1 align="center">BlazorCameraStreamer</h1>
+<h1 align="center">📷 BlazorCameraStreamer</h1>
 <div align="center">
-  
+
 [![Nuget](https://img.shields.io/nuget/v/BlazorCameraStreamer?style=flat-square)](https://www.nuget.org/packages/BlazorCameraStreamer/)
 [![BlazorCameraStreamer](https://img.shields.io/nuget/dt/BlazorCameraStreamer.svg?style=flat-square)](https://www.nuget.org/packages/BlazorCameraStreamer/)
 ![Build Status](https://img.shields.io/github/actions/workflow/status/baltermia/blazor-camera-streamer/dotnet.yml?style=flat-square)
@@ -16,6 +16,8 @@ A Blazor Component library that adds a simple to use camera-streaming functional
   - Get the currently streamed frame
 
  The library works only with video-devices, there's no support for audio devices (at least for now)
+
+ 💡 Want a new feature to be implemented, or you found/have any issues?  Create a [new Issue](https://github.com/baltermia/blazor-cookies/issues/new/choose).
   
 ## Examples
 Implementations of the library can be found in the following projects:
@@ -165,11 +167,3 @@ If you dont want to use the `OnFrame`-Callback, you can receive frames individua
 ```csharp
 string imageData = await CameraStreamerReference.GetCurrentFrameAsync();
 ```
-
-## Finish
-
-I think that should sum it up pretty well.
-
-If you have any question, feature requests or anything else related to the project feel free to contact me anytime. I'm very keen on this project and want to maintain it for a long time.
-
- 
