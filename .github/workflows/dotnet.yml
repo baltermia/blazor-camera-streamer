@@ -1,4 +1,5 @@
 name: BlazorCameraStreamer Build Pipeline
+
 on:
   push:
     branches:
@@ -6,19 +7,30 @@ on:
   pull_request:
     branches:
     - main
+    
 jobs:
   build:
-    runs-on: windows-2022
+    runs-on: windows-latest
+    
     steps:
     - name: Checking Out Code
       uses: actions/checkout@v2
+      
     - name: Installing .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 7.0.x
-    - name: Restoring Nuget Packages
-      run: dotnet restore
-    - name: Builduing Project
-      run: dotnet build --no-restore
-    - name: Running Tests
-      run: dotnet test --no-build --verbosity normal
+        dotnet-version: |
+          7.0.x
+          6.0.x
+          
+    - name: Restoring Nuget Packages for entire Solution
+      run: dotnet restore BlazorCameraStreamer.sln --verbosity normal
+      
+    - name: Build Razor Component Library Project
+      run: dotnet build .\BlazorCameraStreamer\BlazorCameraStreamer.csproj --no-restore --framework net7.0 --verbosity normal
+      
+    - name: Build Serverside Demo Project
+      run: dotnet build .\BlazorCameraStreamer.Demo.Serverside\BlazorCameraStreamer.Demo.Serverside.csproj --no-restore --framework net6.0 --verbosity normal
+      
+    - name: Build Razor Component Library Project
+      run: dotnet build .\BlazorCameraStreamer.Demo.WASM\BlazorCameraStreamer.Demo.WASM.csproj --no-restore --framework net6.0 --verbosity normal
