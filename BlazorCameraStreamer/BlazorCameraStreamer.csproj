@@ -10,7 +10,7 @@
 		<RepositoryUrl>https://github.com/baltermia/blazor-camera-streamer/</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<Description>A Blazor Component library that adds a easy-to-use camera-streaming functionality, which allows you to receive the streamed data.</Description>
-		<PackageReleaseNotes>Updated to support .NET6 \& .NET7. .NET5 support is deprecated.</PackageReleaseNotes>
+		<PackageReleaseNotes>Updated to support .NET6 and .NET7. .NET5 support is deprecated.</PackageReleaseNotes>
 		<Copyright>Copyright (c) 2023 Baltermia Clopath</Copyright>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 		<AssemblyName>BlazorCameraStreamer</AssemblyName>
