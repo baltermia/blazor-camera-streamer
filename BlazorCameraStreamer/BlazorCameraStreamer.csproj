@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
 	<PropertyGroup>
-		<TargetFramework>net5.0</TargetFramework>
+		<TargetFrameworks>net6.0;net7.0</TargetFrameworks>
 		<RootNamespace>BlazorCameraStreamer</RootNamespace>
 		<PackageId>BlazorCameraStreamer</PackageId>
-		<Version>2.2.0</Version>
+		<Version>3.0.0</Version>
 		<Authors>Baltermia Clopath</Authors>
 		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
 		<RepositoryUrl>https://github.com/baltermia/blazor-camera-streamer/</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<Description>A Blazor Component library that adds a easy-to-use camera-streaming functionality, which allows you to receive the streamed data.</Description>
-		<PackageReleaseNotes>Fix Component not working correctly on Mobile devices.</PackageReleaseNotes>
+		<PackageReleaseNotes>Updated to support .NET6 and .NET7. .NET5 support is deprecated.</PackageReleaseNotes>
 		<Copyright>Copyright (c) 2023 Baltermia Clopath</Copyright>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 		<AssemblyName>BlazorCameraStreamer</AssemblyName>
@@ -23,6 +23,10 @@
 
 	</PropertyGroup>
 
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<DefineConstants>TRACE</DefineConstants>
 	</PropertyGroup>
@@ -34,8 +38,8 @@
 	</ItemGroup>
   
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.9" />
-		<PackageReference Include="Microsoft.NETCore.Platforms" Version="5.0.3" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.16" />
+		<PackageReference Include="Microsoft.NETCore.Platforms" Version="6.0.9" />
 	</ItemGroup>
 
 	<ItemGroup>
