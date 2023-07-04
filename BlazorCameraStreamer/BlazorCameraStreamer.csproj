@@ -46,7 +46,6 @@
 		<None Include="..\LICENSE.md" Pack="true" PackagePath="" />
 		<None Include="..\README.md" Pack="true" PackagePath="" />
 		<None Include="..\NUGET-README.md" Pack="true" PackagePath="" />
-		<None Include="wwwroot\js\CameraStreamer.js" />
 	</ItemGroup>
 
 	<ItemGroup>
