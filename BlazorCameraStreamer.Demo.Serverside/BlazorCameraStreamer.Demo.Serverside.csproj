@@ -2,20 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BlazorCameraStreamer\BlazorCameraStreamer.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Resource Include="wwwroot\js\CameraStreamer.js">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-  </ItemGroup>
-
-  <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
-    <Copy SourceFiles="$(ProjectDir)..\BlazorCameraStreamer\wwwroot\js\CameraStreamer.js" DestinationFolder="$(OutDir)\wwwroot\js" />
+  <Target Name="CopyJavascriptFile" AfterTargets="PostBuildEvent">
+    <Copy SourceFiles="..\BlazorCameraStreamer\wwwroot\js\CameraStreamer.js" DestinationFolder="$(OutDir)\wwwroot\js" />
   </Target>
 
 </Project>
