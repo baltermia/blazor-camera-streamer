@@ -70,32 +70,38 @@ namespace BlazorCameraStreamer
             IsInitialized = true;
         }
 
+        /// <inheritdoc/>
         public async Task StartAsync(string camera = null)
         {
             // Use the first found camera if no camrea is given
             await JSObject.InvokeVoidAsync("start", camera ?? (await GetCameraDevicesAsync()).FirstOrDefault()?.DeviceId);
         }
 
+        /// <inheritdoc/>
         public async Task StopAsync()
         {
             await JSObject.InvokeVoidAsync("stop");
         }
 
+        /// <inheritdoc/>
         public async Task ChangeCameraAsync(string newId)
         {
             await JSObject.InvokeVoidAsync("changeCamera", newId);
         }
 
+        /// <inheritdoc/>
         public async Task<bool> GetCameraAccessAsync()
         {
             return await JSRuntime.InvokeAsync<bool>(StaticInteropPath + ".getCameraAccess");
         }
 
+        /// <inheritdoc/>
         public async Task<MediaDeviceInfoModel[]> GetCameraDevicesAsync()
         {
             return await GetCameraDevicesAsync(JSRuntime);
         }
 
+        /// <inheritdoc/>
         public async ValueTask DisposeAsync()
         {
             if (IsInitialized && JSObject != null)
@@ -106,6 +112,7 @@ namespace BlazorCameraStreamer
             }
         }
 
+        /// <inheritdoc/>
         public ValueTask<string> GetCurrentFrameAsync()
         {
             return JSObject.InvokeAsync<string>("getCurrentFrame");
