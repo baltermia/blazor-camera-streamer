@@ -71,6 +71,7 @@ namespace BlazorCameraStreamer
 
         private CameraStreamerController streamerApi;
 
+        /// <inheritdoc/>
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
@@ -98,24 +99,31 @@ namespace BlazorCameraStreamer
                 await StartAsync();
         }
 
+        /// <inheritdoc/>
         public async Task StartAsync(string camera = null) => 
             await streamerApi.StartAsync(camera ?? CameraID);
 
+        /// <inheritdoc/>
         public async Task StopAsync() => 
             await streamerApi.StopAsync();
 
+        /// <inheritdoc/>
         public async Task ChangeCameraAsync(string newId) => 
             await streamerApi.ChangeCameraAsync(CameraID = newId);
 
+        /// <inheritdoc/>
         public async Task<bool> GetCameraAccessAsync() =>
              await streamerApi.GetCameraAccessAsync();
 
+        /// <inheritdoc/>
         public async Task<MediaDeviceInfoModel[]> GetCameraDevicesAsync() =>
             await streamerApi.GetCameraDevicesAsync();
 
+        /// <inheritdoc/>
         public ValueTask<string> GetCurrentFrameAsync() =>
             streamerApi.GetCurrentFrameAsync();
 
+        /// <inheritdoc/>
         public async ValueTask DisposeAsync() => 
             // Check null for streamerApi as otherwise a exception is thrown on page-refresh
             await (streamerApi?.DisposeAsync() ?? ValueTask.CompletedTask);
