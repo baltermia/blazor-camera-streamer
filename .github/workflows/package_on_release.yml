@@ -28,18 +28,18 @@ jobs:
         run: dotnet restore
 
       - name: Build
-        run: dotnet build --configuration Debug --no-restore
+        run: dotnet build --configuration Release --no-restore
 
       - name: Test
         run: dotnet test --no-build --verbosity normal
 
       - name: Pack
-        run: dotnet pack --no-build --configuration Debug
+        run: dotnet pack --no-build --configuration Release
 
       - name: Push NuGet
         run: dotnet nuget push "**/*.nupkg" --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
 
       - name: Push GitHub
-        run: nuget.exe push "**/*.nupkg" -NoSymbols -SkipDuplicate
+        run: nuget.exe push "**/*.nupkg" -SkipDuplicate
         env:
           NUGET_AUTH_TOKEN: ${{ github.token }}
