@@ -47,6 +47,8 @@
 		<None Include="..\README.md" Pack="true" PackagePath="" />
 		<None Include="..\NUGET-README.md" Pack="true" PackagePath="" />
 		<None Include="wwwroot\js\CameraStreamer.js" />
+    <None Include="tsconfig.json" Pack="false" />
+    <None Include="Scripts\CameraStreamer.ts" Pack="false" />
 	</ItemGroup>
 
 	<ItemGroup>
