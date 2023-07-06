@@ -19,7 +19,9 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
 
-		<RestoreAdditionalProjectSources>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <RestoreAdditionalProjectSources>
 			https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json;
 			https://dotnet.myget.org/F/blazor-dev/api/v3/index.json;
 		</RestoreAdditionalProjectSources>
