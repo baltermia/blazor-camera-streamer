@@ -54,7 +54,7 @@ If you're unsure on where to put it, look it up in the [Examples](#examples) lis
 
 ### Serverside Image-Size Restriction
 
-**⚠️ This step is crucial if you want to use the CameraStreamer on ServerSide Blazor ⚠️**
+> **Warning**: This step is crucial if you want to use the CameraStreamer on ServerSide Blazor
 
 The data from the JavaScript-Interop is sent through SignalR to the Server, where your C# Code handles the received data. SignalR has a image cap of 32KB (which is tiny, smaller than 150x150 pixels).
 
@@ -69,7 +69,7 @@ The `MaximumReceiveMessageSize` value indicates the maximum allowed number of by
 
 100'000'000 has no significant meaning, it's just a general cap. As an example, a 3-Channel 8-Bit 1920x1080 image has the following size: `3 * 1920 * 1080 = 6'220'800 Bytes` (this calculation does not take image-compression into account).
 
-**⚠️ BlazorCameraStreamer can be used in ServerSide Blazor. In general though, it is not recommended to use on ServerSide, since a lot of data is sent through SignalR which can cause network delays. There is a reason, why Microsoft set the default limit to only 32KB. ⚠️**
+> **Warning**: BlazorCameraStreamer can be used in ServerSide Blazor. In general though, it is not recommended to use on ServerSide, since a lot of data is sent through SignalR which can cause network delays. There is a reason, why Microsoft set the default limit to only 32KB.
 
 ## How to use
 
