@@ -146,9 +146,16 @@ var BlazorCameraStreamer;
                     this._dotnetObject.invokeMethodAsync(this._invokeIdentifier, data);
             }
             getCurrentCanvasFrame() {
+                const portrait = window.matchMedia("(orientation: portrait)").matches;
                 let canvas = document.createElement("canvas");
-                canvas.width = this._constraints.video["width"];
-                canvas.height = this._constraints.video["height"];
+
+                if(portrait){
+                    canvas.width = this._constraints.video["height"];
+                    canvas.height = this._constraints.video["width"];                                        
+                }else{
+                    canvas.width = this._constraints.video["width"];
+                    canvas.height = this._constraints.video["height"];                    
+                }
                 // Draw the current image of the stream on the canvas
                 canvas.getContext("2d").drawImage(this._video, 0, 0);
                 // Get the iamge as 64base string
