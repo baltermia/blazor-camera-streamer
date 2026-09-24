@@ -29,7 +29,7 @@
 @if (!string.IsNullOrEmpty(imageData))
 {
     <img src=@imageData
-         style="width: 480px; height: 270px;"/>
+         style="width: 480px; height: 270px; object-fit: contain;"/>
 }
 
 @code
@@ -73,7 +73,8 @@
         ++frameCount;
     }
 
-    private async void GetCurrentFrame()
+    // Return a Task (not void) so the page re-renders after the frame is received
+    private async Task GetCurrentFrame()
     {
         imageData = await CameraStreamerReference.GetCurrentFrameAsync();
     }
