@@ -14,23 +14,22 @@ jobs:
 
     steps:
     - name: Checking Out Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v7
 
+    # The .NET 10 SDK builds all target frameworks (net8.0, net10.0) of the library
     - name: Installing .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: |
-          7.0.x
-          6.0.x
+        dotnet-version: 10.0.x
 
     - name: Restoring Nuget Packages for entire Solution
       run: dotnet restore BlazorCameraStreamer.sln --verbosity normal
 
     - name: Build Razor Component Library Project
-      run: dotnet build .\BlazorCameraStreamer\BlazorCameraStreamer.csproj --no-restore --framework net7.0 --verbosity normal
+      run: dotnet build .\BlazorCameraStreamer\BlazorCameraStreamer.csproj --no-restore --verbosity normal
 
     - name: Build Serverside Demo Project
-      run: dotnet build .\BlazorCameraStreamer.Demo.Serverside\BlazorCameraStreamer.Demo.Serverside.csproj --no-restore --framework net6.0 --verbosity normal
+      run: dotnet build .\BlazorCameraStreamer.Demo.Serverside\BlazorCameraStreamer.Demo.Serverside.csproj --no-restore --verbosity normal
 
-    - name: Build Razor Component Library Project
-      run: dotnet build .\BlazorCameraStreamer.Demo.WASM\BlazorCameraStreamer.Demo.WASM.csproj --no-restore --framework net6.0 --verbosity normal
+    - name: Build WASM Demo Project
+      run: dotnet build .\BlazorCameraStreamer.Demo.WASM\BlazorCameraStreamer.Demo.WASM.csproj --no-restore --verbosity normal

@@ -1,15 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
 	<PropertyGroup>
-		<TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+		<!-- The net8.0 build is also used by apps on newer versions (e.g. .NET 9) -->
+		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>
 		<RootNamespace>BlazorCameraStreamer</RootNamespace>
     <AssemblyName>BlazorCameraStreamer</AssemblyName>
 		<PackageId>BlazorCameraStreamer</PackageId>
-		<Version>3.0.1</Version>
+		<Version>4.0.0</Version>
 		<Authors>Baltermia Clopath</Authors>
 		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
 		<Description>A Blazor Component library that adds a easy-to-use camera-streaming functionality, which allows you to receive the streamed data.</Description>
-		<PackageReleaseNotes>Updated to support .NET6 and .NET7. .NET5 support is deprecated.</PackageReleaseNotes>
+		<PackageReleaseNotes>Updated to support .NET 8 and .NET 10 (.NET 9 is supported through the .NET 8 build). .NET 6 and .NET 7 support is dropped, use version 3.x for those.</PackageReleaseNotes>
 		<Copyright>Copyright (c) 2023 Baltermia Clopath</Copyright>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 		<PackageReadmeFile>NUGET-README.md</PackageReadmeFile>
@@ -20,11 +21,6 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
 
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-
-    <RestoreAdditionalProjectSources>
-			https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json;
-			https://dotnet.myget.org/F/blazor-dev/api/v3/index.json;
-		</RestoreAdditionalProjectSources>
 
 	</PropertyGroup>
 
@@ -42,10 +38,12 @@
 		<EmbeddedResource Include="content\**" Exclude="**\*.js;**\*.css" LogicalName="blazor:file:%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
   
-	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.16" />
-		<PackageReference Include="Microsoft.NETCore.Platforms" Version="6.0.9" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
+	<!-- Reference the Components.Web version matching each target framework -->
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.31" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.12" />
 	</ItemGroup>
 
 	<ItemGroup>
