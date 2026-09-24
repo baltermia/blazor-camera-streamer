@@ -147,8 +147,10 @@ var BlazorCameraStreamer;
             }
             getCurrentCanvasFrame() {
                 let canvas = document.createElement("canvas");
-                canvas.width = this._constraints.video["width"];
-                canvas.height = this._constraints.video["height"];
+                // Use the actual resolution of the stream, as it can differ from the constraints (e.g. rotated on mobile devices in portrait mode).
+                // Fall back to the constraints if the video metadata isn't loaded yet
+                canvas.width = this._video.videoWidth || this._constraints.video["width"];
+                canvas.height = this._video.videoHeight || this._constraints.video["height"];
                 // Draw the current image of the stream on the canvas
                 canvas.getContext("2d").drawImage(this._video, 0, 0);
                 // Get the iamge as 64base string
