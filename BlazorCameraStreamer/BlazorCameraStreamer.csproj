@@ -10,7 +10,27 @@
 		<Authors>Baltermia Clopath</Authors>
 		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
 		<Description>A Blazor Component library that adds a easy-to-use camera-streaming functionality, which allows you to receive the streamed data.</Description>
-		<PackageReleaseNotes>Updated to support .NET 8 and .NET 10 (.NET 9 is supported through the .NET 8 build). .NET 6 and .NET 7 support is dropped, use version 3.x for those.</PackageReleaseNotes>
+		<PackageReleaseNotes>Breaking:
+- Requires .NET 8 or newer (.NET 9 uses the .NET 8 build). .NET 6 and .NET 7 are no longer supported, use version 3.x for those.
+
+New:
+- FacingMode parameter to prefer the front or rear camera, and the facing mode of each camera in GetCameraDevicesAsync (if the browser reports it).
+- Frames are captured on every frame of the video instead of about 4 times per second.
+- OnFrameData callback, which receives the frames as bytes (faster than the base64 string of OnFrame).
+- FrameRate, FrameFormat (png, jpeg, webp) and FrameQuality parameters.
+
+Changed:
+- Autostart asks for the camera access itself. Checking the access and calling ReloadAsync in OnRendered is no longer needed.
+- StartAsync and ChangeCameraAsync complete when the stream is started.
+- OnFrame is invoked up to the frame rate of the camera (use FrameRate to limit it). A new frame is only captured after the previous callback completed.
+- GetCurrentFrameAsync always captures a new frame, in the format set by FrameFormat.
+
+Fixed:
+- Captured frames were cropped in portrait mode on mobile devices (#42).
+- The camera stayed in use for several seconds after stopping (#43).
+- OverconstrainedError when starting without a camera id before the access was granted (#37, #34).
+- ChangeCameraAsync restarted the stream even if the camera didn't change.
+- Errors when closing the tab on Blazor Server.</PackageReleaseNotes>
 		<Copyright>Copyright (c) 2023 Baltermia Clopath</Copyright>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 		<PackageReadmeFile>NUGET-README.md</PackageReadmeFile>

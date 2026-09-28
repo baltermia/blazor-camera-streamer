@@ -28,6 +28,8 @@ Implementations of the library can be found in the following projects:
 ## Browser Support
 The component works both on Serverside and WASM Blazor.
 
+It requires .NET 8 or newer. For .NET 6 and .NET 7, use version 3.x of the package (`dotnet add package BlazorCameraStreamer --version 3.0.1`).
+
 ## Installation Guide
 
 ### Download and install the nuget package
