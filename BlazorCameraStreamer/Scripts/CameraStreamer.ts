@@ -148,10 +148,12 @@ namespace BlazorCameraStreamer.Scripts {
         }
 
         /**
-         * Starts the camerastreamer. The deviceId of the camera must be specified
+         * Starts the camerastreamer. If no deviceId is given, the browser chooses the camera (based on the facing mode, if one is set).
+         * If the site has no access to the camera yet, the browser asks the user for it
          * @param cameraId The deviceId of the camera
+         * @returns Resolves when the stream is started, with whether it could be started
          */
-        public start(cameraId: string): void {
+        public start(cameraId: string): Promise<boolean> {
             // Stop the previous stream first, even if it's still starting (otherwise the stream wouldn't be closed and the camera will be used even when stopping again)
             this.stop();
 
@@ -167,20 +169,7 @@ namespace BlazorCameraStreamer.Scripts {
             // so devices without such a camera (e.g. a laptop without rear camera) fall back to another one
             this._constraints.video["facingMode"] = !cameraId && this._facingMode ? { ideal: this._facingMode } : undefined;
 
-            navigator.mediaDevices.getUserMedia(this._constraints).then(mediaStream => {
-                // The streamer was stopped, restarted or disposed while waiting for the camera, release it immediately
-                if (startId !== this._startId) {
-                    mediaStream.getTracks().forEach(t => t.stop());
-                    return;
-                }
-
-                this._stream = mediaStream;
-
-                // Add the stream of the chosen camera as src on the video element
-                this._video.srcObject = this._stream;
-            });
-
-            // Start the video element as soon as all metadata is loaded (this is needed as we get the mediastream object asynchronously in the code above)
+            // Start the video element as soon as all metadata is loaded (this is needed as we get the mediastream object asynchronously in the code below)
             this._video.onloadedmetadata = async (ev: Event) => {
                 if (startId !== this._startId) return;
 
@@ -198,6 +187,25 @@ namespace BlazorCameraStreamer.Scripts {
                 if (firstPlay && (this._callInvoke || this._frameDataInvokeIdentifier))
                     this.requestFrame(startId);
             }
+
+            return navigator.mediaDevices.getUserMedia(this._constraints).then(mediaStream => {
+                // The streamer was stopped, restarted or disposed while waiting for the camera, release it immediately
+                if (startId !== this._startId) {
+                    mediaStream.getTracks().forEach(t => t.stop());
+                    return false;
+                }
+
+                this._stream = mediaStream;
+
+                // Add the stream of the chosen camera as src on the video element
+                this._video.srcObject = this._stream;
+
+                return true;
+            }).catch(e => {
+                // E.g. the user denied the access or the camera is used by another application
+                console.error("BlazorCameraStreamer: The camera stream could not be started", e);
+                return false;
+            });
         }
 
         /**
@@ -219,13 +227,14 @@ namespace BlazorCameraStreamer.Scripts {
         /**
          * Changes the current camera (if the camera is the same as the one at the moment nothing will happen)
          * @param newId
+         * @returns Resolves when the camera is changed, with whether the stream could be started
          */
-        public changeCamera(newId: string): void {
+        public changeCamera(newId: string): Promise<boolean> {
             // Don't start the stream again if the camera's still the same
-            if (this._streamActive && this._cameraId === newId) return;
+            if (this._streamActive && this._cameraId === newId) return Promise.resolve(true);
 
             // Simply calling the start method again will change the camera that is being used
-            this.start(newId);
+            return this.start(newId);
         }
 
         /**

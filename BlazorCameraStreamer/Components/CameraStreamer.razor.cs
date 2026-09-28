@@ -78,7 +78,7 @@ namespace BlazorCameraStreamer
         public double? FrameQuality { get; set; } = null;
 
         /// <summary>
-        /// Callback that is called after the first complete render of the component
+        /// Callback that is called after the first complete render of the component (and after the stream is started, if <see cref="Autostart"/> is set)
         /// </summary>
         [Parameter]
         public EventCallback OnRendered { get; set; }
@@ -97,7 +97,8 @@ namespace BlazorCameraStreamer
         public CameraFacingMode? FacingMode { get; set; } = null;
 
         /// <summary>
-        /// States if the stream should automatically start on initialization (render) and reload
+        /// States if the stream should automatically start on initialization (render) and reload. If the site has no access to the camera yet, the browser asks the user for it.
+        /// <see cref="OnRendered"/> is invoked after the stream is started
         /// </summary>
         [Parameter]
         public bool Autostart { get; set; } = false;

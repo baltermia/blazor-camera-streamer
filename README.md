@@ -104,18 +104,15 @@ CameraStreamer CameraStreamerReference;
 
 string cameraId = null;
 
-private async void OnRenderedHandler()
+private async Task OnRenderedHandler()
 {
-    // Check camera-access or ask user, if it's not allowed currently
-    if (await CameraStreamerReference.GetCameraAccessAsync())
-    {
-        // Reloading re-initializes the stream and starts the
-        // stream automatically if the Autostart parameter is set
-        await CameraStreamerReference.ReloadAsync();
+    // With Autostart, the stream is already started at this point
+    // (the browser asked the user for the camera access if needed)
+    MediaDeviceInfoModel[] cameras = await CameraStreamerReference.GetCameraDevicesAsync();
 
-        // If Autostart is not set, you have to manually start the stream again
-        /* await CameraStreamerReference.StartAsync(); */
-    }
+    // Without Autostart, ask for the camera access and start the stream manually
+    /* if (await CameraStreamerReference.GetCameraAccessAsync())
+        await CameraStreamerReference.StartAsync(); */
 }
 
 private void OnFrameHandler(string data)
@@ -138,7 +135,9 @@ These two parameters specify the resolution of the stream - NOT the display size
 
 **OnRendered**
 
-As soon as the component is completely rendered, this callback is invoked - although only on the first render of the instance (so a reload will definitely fire it again).
+As soon as the component is completely rendered, this callback is invoked - although only on the first render of the instance. If `Autostart` is set, it's invoked after the stream is started.
+
+> **Note**: In versions before 4.0, the camera access had to be checked and the component reloaded (`ReloadAsync()`) in this callback. This is no longer needed, `Autostart` asks for the access itself.
 
 **OnFrame**
 

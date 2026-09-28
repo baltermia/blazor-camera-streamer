@@ -1,6 +1,7 @@
 ﻿using BlazorCameraStreamer.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
 
@@ -103,7 +104,8 @@ namespace BlazorCameraStreamer
             if (string.IsNullOrEmpty(camera) && FacingMode is null)
                 camera = (await GetCameraDevicesAsync()).FirstOrDefault()?.DeviceId;
 
-            await JSObject.InvokeVoidAsync("start", camera);
+            // Completes when the stream is started. No timeout, as the user might have to allow the camera access first (serverside, calls are cancelled after one minute by default)
+            await JSObject.InvokeVoidAsync("start", CancellationToken.None, camera);
         }
 
         /// <inheritdoc/>
@@ -115,13 +117,14 @@ namespace BlazorCameraStreamer
         /// <inheritdoc/>
         public async Task ChangeCameraAsync(string newId)
         {
-            await JSObject.InvokeVoidAsync("changeCamera", newId);
+            await JSObject.InvokeVoidAsync("changeCamera", CancellationToken.None, newId);
         }
 
         /// <inheritdoc/>
         public async Task<bool> GetCameraAccessAsync()
         {
-            return await JSRuntime.InvokeAsync<bool>(StaticInteropPath + ".getCameraAccess");
+            // No timeout, as the user might take a while to allow the camera access
+            return await JSRuntime.InvokeAsync<bool>(StaticInteropPath + ".getCameraAccess", CancellationToken.None);
         }
 
         /// <inheritdoc/>

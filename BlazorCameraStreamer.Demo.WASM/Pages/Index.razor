@@ -68,19 +68,13 @@
     {
         frameCount = 0;
 
-        // Check camera-access or ask user, if it's not allowed currently
-        if (await CameraStreamerReference.GetCameraAccessAsync())
-        {
-            // The names of the cameras are only available after the access is granted
-            cameras = await CameraStreamerReference.GetCameraDevicesAsync();
+        // With Autostart, this is called after the stream is started (the browser asked the user for the camera access if needed).
+        // The names of the cameras are only available after the access is granted
+        cameras = await CameraStreamerReference.GetCameraDevicesAsync();
 
-            // Reloading re-initializes the stream and starts the
-            // stream automatically if the Autostart parameter is set
-            await CameraStreamerReference.ReloadAsync();
-
-            // If Autostart is not set, you have to manually start the stream again
-            /* await CameraStreamerReference.StartAsync(); */
-        }
+        // Without Autostart, ask for the access (if it's not allowed currently) and start the stream manually
+        /* if (await CameraStreamerReference.GetCameraAccessAsync())
+            await CameraStreamerReference.StartAsync(); */
     }
 
     private async Task Start()

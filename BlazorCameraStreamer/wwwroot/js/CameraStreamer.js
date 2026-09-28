@@ -66,8 +66,10 @@ var BlazorCameraStreamer;
                 };
             }
             /**
-             * Starts the camerastreamer. The deviceId of the camera must be specified
+             * Starts the camerastreamer. If no deviceId is given, the browser chooses the camera (based on the facing mode, if one is set).
+             * If the site has no access to the camera yet, the browser asks the user for it
              * @param cameraId The deviceId of the camera
+             * @returns Resolves when the stream is started, with whether it could be started
              */
             start(cameraId) {
                 // Stop the previous stream first, even if it's still starting (otherwise the stream wouldn't be closed and the camera will be used even when stopping again)
@@ -80,17 +82,7 @@ var BlazorCameraStreamer;
                 // Without a specific camera, prefer the one facing the given direction. Ideal instead of exact,
                 // so devices without such a camera (e.g. a laptop without rear camera) fall back to another one
                 this._constraints.video["facingMode"] = !cameraId && this._facingMode ? { ideal: this._facingMode } : undefined;
-                navigator.mediaDevices.getUserMedia(this._constraints).then(mediaStream => {
-                    // The streamer was stopped, restarted or disposed while waiting for the camera, release it immediately
-                    if (startId !== this._startId) {
-                        mediaStream.getTracks().forEach(t => t.stop());
-                        return;
-                    }
-                    this._stream = mediaStream;
-                    // Add the stream of the chosen camera as src on the video element
-                    this._video.srcObject = this._stream;
-                });
-                // Start the video element as soon as all metadata is loaded (this is needed as we get the mediastream object asynchronously in the code above)
+                // Start the video element as soon as all metadata is loaded (this is needed as we get the mediastream object asynchronously in the code below)
                 this._video.onloadedmetadata = (ev) => __awaiter(this, void 0, void 0, function* () {
                     if (startId !== this._startId)
                         return;
@@ -104,6 +96,21 @@ var BlazorCameraStreamer;
                     // Start capturing the frames for the callbacks. Only now that the video is playing, as requestVideoFrameCallback stops firing if it's requested before
                     if (firstPlay && (this._callInvoke || this._frameDataInvokeIdentifier))
                         this.requestFrame(startId);
+                });
+                return navigator.mediaDevices.getUserMedia(this._constraints).then(mediaStream => {
+                    // The streamer was stopped, restarted or disposed while waiting for the camera, release it immediately
+                    if (startId !== this._startId) {
+                        mediaStream.getTracks().forEach(t => t.stop());
+                        return false;
+                    }
+                    this._stream = mediaStream;
+                    // Add the stream of the chosen camera as src on the video element
+                    this._video.srcObject = this._stream;
+                    return true;
+                }).catch(e => {
+                    // E.g. the user denied the access or the camera is used by another application
+                    console.error("BlazorCameraStreamer: The camera stream could not be started", e);
+                    return false;
                 });
             }
             /**
@@ -122,13 +129,14 @@ var BlazorCameraStreamer;
             /**
              * Changes the current camera (if the camera is the same as the one at the moment nothing will happen)
              * @param newId
+             * @returns Resolves when the camera is changed, with whether the stream could be started
              */
             changeCamera(newId) {
                 // Don't start the stream again if the camera's still the same
                 if (this._streamActive && this._cameraId === newId)
-                    return;
+                    return Promise.resolve(true);
                 // Simply calling the start method again will change the camera that is being used
-                this.start(newId);
+                return this.start(newId);
             }
             /**
              * Checks if the site has access to the camera(s) and asks for it if the access is currently denied
