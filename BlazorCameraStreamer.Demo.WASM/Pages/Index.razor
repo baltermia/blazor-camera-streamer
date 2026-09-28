@@ -74,12 +74,12 @@
         }
     }
 
-    private async void Start()
+    private async Task Start()
     {
         await CameraStreamerReference.StartAsync();
     }
 
-    private async void Stop()
+    private async Task Stop()
     {
         await CameraStreamerReference.StopAsync();
     }

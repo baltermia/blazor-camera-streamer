@@ -18,7 +18,7 @@ A Blazor Component library that adds a simple to use camera-streaming functional
 
  The library works only with video-devices, there's no support for audio devices (at least for now)
 
- 💡 Want a new feature to be implemented, or you found/have any issues?  Create a [new Issue](https://github.com/baltermia/blazor-cookies/issues/new/choose).
+ 💡 Want a new feature to be implemented, or you found/have any issues?  Create a [new Issue](https://github.com/baltermia/blazor-camera-streamer/issues/new/choose).
   
 ## Examples
 Implementations of the library can be found in the following projects:

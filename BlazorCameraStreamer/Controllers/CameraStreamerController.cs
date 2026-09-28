@@ -123,9 +123,16 @@ namespace BlazorCameraStreamer
         {
             if (IsInitialized && JSObject != null)
             {
-                await JSObject.InvokeVoidAsync("dispose");
+                try
+                {
+                    await JSObject.InvokeVoidAsync("dispose");
 
-                await JSObject.DisposeAsync();
+                    await JSObject.DisposeAsync();
+                }
+                catch (JSDisconnectedException)
+                {
+                    // Serverside: The circuit is already disconnected (e.g. the tab was closed), so there's nothing left to release in the browser
+                }
             }
 
             // Release the reference, otherwise this object can't be garbage collected
