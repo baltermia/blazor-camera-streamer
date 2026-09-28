@@ -20,6 +20,10 @@ var BlazorCameraStreamer;
                  * Whether or not the stream is currently active
                  */
                 this._streamActive = false;
+                /**
+                 * Incremented on every stop. Used to detect streams of an outdated start call (e.g. the streamer was stopped or disposed before the camera was ready)
+                 */
+                this._startId = 0;
             }
             /**
              * Returns a new instance of the CameraStreamerInterop class
@@ -52,12 +56,17 @@ var BlazorCameraStreamer;
              * @param cameraId The deviceId of the camera
              */
             start(cameraId) {
-                // Stop the stream first if it's active already (otherwise the stream wouldn't be closed and the camera will be used even when stopping again)
-                if (this._streamActive)
-                    this.stop();
+                // Stop the previous stream first, even if it's still starting (otherwise the stream wouldn't be closed and the camera will be used even when stopping again)
+                this.stop();
+                const startId = this._startId;
                 // Write the deviceId into the _constraints object
                 this._constraints.video["deviceId"]["exact"] = cameraId;
                 navigator.mediaDevices.getUserMedia(this._constraints).then(mediaStream => {
+                    // The streamer was stopped, restarted or disposed while waiting for the camera, release it immediately
+                    if (startId !== this._startId) {
+                        mediaStream.getTracks().forEach(t => t.stop());
+                        return;
+                    }
                     this._stream = mediaStream;
                     // Add the stream of the chosen camera as src on the video element
                     this._video.srcObject = this._stream;
@@ -67,6 +76,8 @@ var BlazorCameraStreamer;
                 });
                 // Start the video element as soon as all metadata is loaded (this is needed as we get the mediastream object asynchronously in the code above)
                 this._video.onloadedmetadata = (ev) => __awaiter(this, void 0, void 0, function* () {
+                    if (startId !== this._startId)
+                        return;
                     yield this._video.play();
                     this._streamActive = true;
                 });
@@ -76,6 +87,8 @@ var BlazorCameraStreamer;
              */
             stop() {
                 var _a, _b;
+                // Invalidate pending start calls, so their stream gets released as soon as it's ready
+                this._startId++;
                 // Use pause method as there's no stop method in the HTMLVideoElement interface
                 (_a = this._video) === null || _a === void 0 ? void 0 : _a.pause();
                 // Stop all tracks of the stream (without doing this the stream would still be processed and the browser will show that the camera is still in use by the site)
@@ -102,7 +115,9 @@ var BlazorCameraStreamer;
             static getCameraAccess() {
                 return __awaiter(this, void 0, void 0, function* () {
                     try {
-                        yield navigator.mediaDevices.getUserMedia({ video: true });
+                        const stream = yield navigator.mediaDevices.getUserMedia({ video: true });
+                        // The stream is only needed to request the access, release the camera immediately (otherwise it stays in use until the stream is garbage collected)
+                        stream.getTracks().forEach(t => t.stop());
                     }
                     catch (_a) {
                         return false;
