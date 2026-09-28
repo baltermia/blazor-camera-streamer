@@ -47,7 +47,7 @@ var BlazorCameraStreamer;
                     video: {
                         width: width,
                         height: height,
-                        deviceId: { exact: undefined }
+                        deviceId: undefined
                     }
                 };
             }
@@ -59,8 +59,10 @@ var BlazorCameraStreamer;
                 // Stop the previous stream first, even if it's still starting (otherwise the stream wouldn't be closed and the camera will be used even when stopping again)
                 this.stop();
                 const startId = this._startId;
-                // Write the deviceId into the _constraints object
-                this._constraints.video["deviceId"]["exact"] = cameraId;
+                this._cameraId = cameraId;
+                // Write the deviceId into the _constraints object. Only require a specific camera if an id is given, as an empty id
+                // (e.g. from the device list before the camera access is granted) would fail with an OverconstrainedError
+                this._constraints.video["deviceId"] = cameraId ? { exact: cameraId } : undefined;
                 navigator.mediaDevices.getUserMedia(this._constraints).then(mediaStream => {
                     // The streamer was stopped, restarted or disposed while waiting for the camera, release it immediately
                     if (startId !== this._startId) {
@@ -103,7 +105,7 @@ var BlazorCameraStreamer;
              */
             changeCamera(newId) {
                 // Don't start the stream again if the camera's still the same
-                if (this._constraints.video["deviceId"] === newId)
+                if (this._streamActive && this._cameraId === newId)
                     return;
                 // Simply calling the start method again will change the camera that is being used
                 this.start(newId);

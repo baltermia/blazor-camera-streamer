@@ -25,7 +25,12 @@ namespace BlazorCameraStreamer
         /// Typescript CameraStreamer object
         /// </summary>
         private IJSObjectReference JSObject;
-        
+
+        /// <summary>
+        /// Reference to this object which is passed to typescript (used for the OnFrame callback)
+        /// </summary>
+        private DotNetObjectReference<CameraStreamerController> DotNetReference;
+
         /// <summary>
         /// States if the object has been initialized already
         /// </summary>
@@ -64,8 +69,9 @@ namespace BlazorCameraStreamer
 
             JSObject = await JSRuntime.InvokeAsync<IJSObjectReference>(StaticInteropPath + ".createInstance");
 
+            DotNetReference = DotNetObjectReference.Create(this);
 
-            await JSObject.InvokeVoidAsync("init", videoReference, OnFrameCallback.HasDelegate, DotNetObjectReference.Create(this), nameof(OnFrame), width, height);
+            await JSObject.InvokeVoidAsync("init", videoReference, OnFrameCallback.HasDelegate, DotNetReference, nameof(OnFrame), width, height);
 
             IsInitialized = true;
         }
@@ -74,7 +80,10 @@ namespace BlazorCameraStreamer
         public async Task StartAsync(string camera = null)
         {
             // Use the first found camera if no camrea is given
-            await JSObject.InvokeVoidAsync("start", camera ?? (await GetCameraDevicesAsync()).FirstOrDefault()?.DeviceId);
+            if (string.IsNullOrEmpty(camera))
+                camera = (await GetCameraDevicesAsync()).FirstOrDefault()?.DeviceId;
+
+            await JSObject.InvokeVoidAsync("start", camera);
         }
 
         /// <inheritdoc/>
@@ -110,6 +119,10 @@ namespace BlazorCameraStreamer
 
                 await JSObject.DisposeAsync();
             }
+
+            // Release the reference, otherwise this object can't be garbage collected
+            DotNetReference?.Dispose();
+            DotNetReference = null;
         }
 
         /// <inheritdoc/>

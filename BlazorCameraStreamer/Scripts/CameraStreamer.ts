@@ -61,6 +61,11 @@ namespace BlazorCameraStreamer.Scripts {
         private _startId: number = 0;
 
         /**
+         * The deviceId of the camera given in the last start call
+         */
+        private _cameraId: string;
+
+        /**
          * Returns a new instance of the CameraStreamerInterop class
          */
         public static createInstance(): CameraStreamerInterop {
@@ -84,7 +89,7 @@ namespace BlazorCameraStreamer.Scripts {
                 video: {
                     width: width,
                     height: height,
-                    deviceId: { exact: undefined }
+                    deviceId: undefined
                 }
             }
         }
@@ -99,8 +104,11 @@ namespace BlazorCameraStreamer.Scripts {
 
             const startId = this._startId;
 
-            // Write the deviceId into the _constraints object
-            this._constraints.video["deviceId"]["exact"] = cameraId;
+            this._cameraId = cameraId;
+
+            // Write the deviceId into the _constraints object. Only require a specific camera if an id is given, as an empty id
+            // (e.g. from the device list before the camera access is granted) would fail with an OverconstrainedError
+            this._constraints.video["deviceId"] = cameraId ? { exact: cameraId } : undefined;
 
             navigator.mediaDevices.getUserMedia(this._constraints).then(mediaStream => {
                 // The streamer was stopped, restarted or disposed while waiting for the camera, release it immediately
@@ -154,7 +162,7 @@ namespace BlazorCameraStreamer.Scripts {
          */
         public changeCamera(newId: string): void {
             // Don't start the stream again if the camera's still the same
-            if (this._constraints.video["deviceId"] === newId) return;
+            if (this._streamActive && this._cameraId === newId) return;
 
             // Simply calling the start method again will change the camera that is being used
             this.start(newId);
