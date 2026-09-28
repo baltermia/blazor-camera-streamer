@@ -20,6 +20,14 @@ var BlazorCameraStreamer;
                  * Whether or not the stream is currently active
                  */
                 this._streamActive = false;
+                /**
+                 * Time (performance.now) at which the last frame was sent to the frame callbacks
+                 */
+                this._lastFrameTime = 0;
+                /**
+                 * Incremented on every stop. Used to detect streams of an outdated start call (e.g. the streamer was stopped or disposed before the camera was ready)
+                 */
+                this._startId = 0;
             }
             /**
              * Returns a new instance of the CameraStreamerInterop class
@@ -32,43 +40,77 @@ var BlazorCameraStreamer;
              * @param video ElementReference of the video
              * @param api Reference to the dotnet object that should recieve callbacks
              * @param camera Device-string (id) of the camera that should be used for the stream
+             * @param facingMode Preferred direction of the camera (e.g. "environment"), used if no deviceId is given when starting
+             * @param onFrameDataInvokeName Name of the method that should be invoked with the binary data of each frame (null if not used)
+             * @param frameRate Maximum number of frames per second for the frame callbacks (null or 0 for no limit)
+             * @param frameType Image type of the captured frames (e.g. "image/jpeg")
+             * @param frameQuality Quality of the captured frames between 0 and 1, only used for lossy types like jpeg and webp (null for the browser default)
              */
-            init(video, callOnFrameInvoke, api = null, onFrameInvokeName = null, width = 640, height = 360) {
+            init(video, callOnFrameInvoke, api = null, onFrameInvokeName = null, width = 640, height = 360, facingMode = null, onFrameDataInvokeName = null, frameRate = null, frameType = "image/png", frameQuality = null) {
                 this._video = video;
+                this._facingMode = facingMode;
                 this._dotnetObject = api;
                 this._invokeIdentifier = onFrameInvokeName;
                 this._callInvoke = this._invokeIdentifier === null || this._dotnetObject === null ? false : callOnFrameInvoke;
+                this._frameDataInvokeIdentifier = this._dotnetObject === null ? null : onFrameDataInvokeName;
+                this._frameRate = frameRate;
+                this._frameType = frameType || "image/png";
+                this._frameQuality = frameQuality;
                 this._constraints = {
                     audio: false,
                     video: {
                         width: width,
                         height: height,
-                        deviceId: { exact: undefined }
+                        deviceId: undefined
                     }
                 };
             }
             /**
-             * Starts the camerastreamer. The deviceId of the camera must be specified
+             * Starts the camerastreamer. If no deviceId is given, the browser chooses the camera (based on the facing mode, if one is set).
+             * If the site has no access to the camera yet, the browser asks the user for it
              * @param cameraId The deviceId of the camera
+             * @returns Resolves when the stream is started, with whether it could be started
              */
             start(cameraId) {
-                // Stop the stream first if it's active already (otherwise the stream wouldn't be closed and the camera will be used even when stopping again)
-                if (this._streamActive)
-                    this.stop();
-                // Write the deviceId into the _constraints object
-                this._constraints.video["deviceId"]["exact"] = cameraId;
-                navigator.mediaDevices.getUserMedia(this._constraints).then(mediaStream => {
+                // Stop the previous stream first, even if it's still starting (otherwise the stream wouldn't be closed and the camera will be used even when stopping again)
+                this.stop();
+                const startId = this._startId;
+                this._cameraId = cameraId;
+                // Write the deviceId into the _constraints object. Only require a specific camera if an id is given, as an empty id
+                // (e.g. from the device list before the camera access is granted) would fail with an OverconstrainedError
+                this._constraints.video["deviceId"] = cameraId ? { exact: cameraId } : undefined;
+                // Without a specific camera, prefer the one facing the given direction. Ideal instead of exact,
+                // so devices without such a camera (e.g. a laptop without rear camera) fall back to another one
+                this._constraints.video["facingMode"] = !cameraId && this._facingMode ? { ideal: this._facingMode } : undefined;
+                // Start the video element as soon as all metadata is loaded (this is needed as we get the mediastream object asynchronously in the code below)
+                this._video.onloadedmetadata = (ev) => __awaiter(this, void 0, void 0, function* () {
+                    if (startId !== this._startId)
+                        return;
+                    yield this._video.play();
+                    // The streamer was stopped or restarted while starting the video
+                    if (startId !== this._startId)
+                        return;
+                    // The event can fire again (e.g. if the metadata changes), but the frames should only be captured once per start call
+                    const firstPlay = !this._streamActive;
+                    this._streamActive = true;
+                    // Start capturing the frames for the callbacks. Only now that the video is playing, as requestVideoFrameCallback stops firing if it's requested before
+                    if (firstPlay && (this._callInvoke || this._frameDataInvokeIdentifier))
+                        this.requestFrame(startId);
+                });
+                return navigator.mediaDevices.getUserMedia(this._constraints).then(mediaStream => {
+                    // The streamer was stopped, restarted or disposed while waiting for the camera, release it immediately
+                    if (startId !== this._startId) {
+                        mediaStream.getTracks().forEach(t => t.stop());
+                        return false;
+                    }
                     this._stream = mediaStream;
                     // Add the stream of the chosen camera as src on the video element
                     this._video.srcObject = this._stream;
-                    if (this._callInvoke)
-                        // Add with anonymous function, not assigning directly (neccesarry, otherwise the method isn't in the scope anymore, e.g. can't access properties etc.)
-                        this._video.ontimeupdate = (ev) => this.onFrame(ev);
-                });
-                // Start the video element as soon as all metadata is loaded (this is needed as we get the mediastream object asynchronously in the code above)
-                this._video.onloadedmetadata = (ev) => __awaiter(this, void 0, void 0, function* () {
-                    yield this._video.play();
-                    this._streamActive = true;
+                    return true;
+                }).catch(e => {
+                    // E.g. the user denied the access or the camera is used by another application
+                    console.error("BlazorCameraStreamer: The camera stream could not be started", e);
+                    return false;
                 });
             }
             /**
@@ -76,24 +118,25 @@ var BlazorCameraStreamer;
              */
             stop() {
                 var _a, _b;
+                // Invalidate pending start calls, so their stream gets released as soon as it's ready
+                this._startId++;
                 // Use pause method as there's no stop method in the HTMLVideoElement interface
                 (_a = this._video) === null || _a === void 0 ? void 0 : _a.pause();
                 // Stop all tracks of the stream (without doing this the stream would still be processed and the browser will show that the camera is still in use by the site)
                 (_b = this._stream) === null || _b === void 0 ? void 0 : _b.getTracks().forEach(t => t.stop());
                 this._streamActive = false;
-                if (this._video !== null)
-                    this._video.ontimeupdate = null;
             }
             /**
              * Changes the current camera (if the camera is the same as the one at the moment nothing will happen)
              * @param newId
+             * @returns Resolves when the camera is changed, with whether the stream could be started
              */
             changeCamera(newId) {
                 // Don't start the stream again if the camera's still the same
-                if (this._constraints.video["deviceId"] === newId)
-                    return;
+                if (this._streamActive && this._cameraId === newId)
+                    return Promise.resolve(true);
                 // Simply calling the start method again will change the camera that is being used
-                this.start(newId);
+                return this.start(newId);
             }
             /**
              * Checks if the site has access to the camera(s) and asks for it if the access is currently denied
@@ -102,7 +145,9 @@ var BlazorCameraStreamer;
             static getCameraAccess() {
                 return __awaiter(this, void 0, void 0, function* () {
                     try {
-                        yield navigator.mediaDevices.getUserMedia({ video: true });
+                        const stream = yield navigator.mediaDevices.getUserMedia({ video: true });
+                        // The stream is only needed to request the access, release the camera immediately (otherwise it stays in use until the stream is garbage collected)
+                        stream.getTracks().forEach(t => t.stop());
                     }
                     catch (_a) {
                         return false;
@@ -111,19 +156,38 @@ var BlazorCameraStreamer;
                 });
             }
             /**
-             * Gets all media-devices of kind 'videoinput' and returns them as a MediaDeviceInfo array
+             * Gets all media-devices of kind 'videoinput' and returns them as a CameraDeviceInfo array
              */
             static getCameraDeviceList() {
                 return navigator.mediaDevices.enumerateDevices()
                     // Wait until all devices are enumerated
                     .then(l => l
                     // Filters out all videoinputs (the streamer doesn't support audio)
-                    .filter(d => d.kind === "videoinput"));
+                    .filter(d => d.kind === "videoinput")
+                    .map(d => ({ deviceId: d.deviceId, label: d.label, facingMode: CameraStreamerInterop.getFacingMode(d) })));
             }
+            /**
+             * Gets the direction the camera is facing, if the browser reports it (not supported by all browsers, and usually not reported for desktop webcams)
+             * @returns "user", "environment", "left", "right" or null if unknown
+             */
+            static getFacingMode(device) {
+                var _a, _b, _c;
+                try {
+                    // getCapabilities only exists on InputDeviceInfo, which not all browsers support (e.g. Firefox)
+                    const facingMode = (_c = (_b = (_a = device).getCapabilities) === null || _b === void 0 ? void 0 : _b.call(_a).facingMode) === null || _c === void 0 ? void 0 : _c[0];
+                    // Only return known values, as they're converted to an enum on the dotnet side
+                    return facingMode && ["user", "environment", "left", "right"].includes(facingMode) ? facingMode : null;
+                }
+                catch (_d) {
+                    return null;
+                }
+            }
+            /**
+             * Captures the current frame of the stream
+             * @returns The image as data-url (e.g. "data:image/png;base64,...")
+             */
             getCurrentFrame() {
-                return (this._callInvoke && this._streamActive) ?
-                    Promise.resolve(this._lastFrame) :
-                    Promise.resolve(this.getCurrentCanvasFrame());
+                return Promise.resolve(this.drawFrame().toDataURL(this._frameType, this._frameQuality));
             }
             /**
              * Releases all resources and stops the stream. The object must be reinitialized before it can be used again
@@ -135,31 +199,87 @@ var BlazorCameraStreamer;
                 this._dotnetObject = null;
                 this._stream = null;
                 this._constraints = null;
-                this._lastFrame = null;
+                this._canvas = null;
             }
             /**
-             * Invokes the dotnet object on the provided method with the given data
-             * @param data The string the dotnet method recieves
+             * Requests the frame callback for the next frame of the video. Uses requestVideoFrameCallback if supported (called for every new frame of the video), otherwise requestAnimationFrame
+             * @param startId Id of the start call the frames are captured for
              */
-            invokeDotnetObject(data) {
-                if (this._callInvoke)
-                    this._dotnetObject.invokeMethodAsync(this._invokeIdentifier, data);
+            requestFrame(startId) {
+                // The streamer was stopped, restarted or disposed in the meantime (this ends the loop)
+                if (startId !== this._startId)
+                    return;
+                if ("requestVideoFrameCallback" in this._video)
+                    this._video.requestVideoFrameCallback(() => this.onFrame(startId));
+                else
+                    requestAnimationFrame(() => this.onFrame(startId));
             }
-            getCurrentCanvasFrame() {
-                let canvas = document.createElement("canvas");
-                canvas.width = this._constraints.video["width"];
-                canvas.height = this._constraints.video["height"];
+            /**
+             * Captures the current frame and invokes the dotnet callbacks with it (if the frame rate allows it), then requests the next frame
+             * @param startId Id of the start call the frames are captured for
+             */
+            onFrame(startId) {
+                return __awaiter(this, void 0, void 0, function* () {
+                    if (startId !== this._startId)
+                        return;
+                    // Allow a small tolerance, as the frames of the video don't arrive in exact intervals
+                    const minInterval = this._frameRate > 0 ? 1000 / this._frameRate * 0.9 : 0;
+                    if (this._streamActive && performance.now() - this._lastFrameTime >= minInterval) {
+                        this._lastFrameTime = performance.now();
+                        try {
+                            // Wait until the callbacks are completed, so that no more frames are sent than the dotnet side can process (frames in between are skipped)
+                            yield this.sendFrame(startId);
+                        }
+                        catch (e) {
+                            // Errors after stopping are expected (e.g. the dotnet object is already disposed)
+                            if (startId === this._startId)
+                                console.error(e);
+                        }
+                    }
+                    this.requestFrame(startId);
+                });
+            }
+            /**
+             * Captures the current frame and invokes the dotnet callbacks with it
+             * @param startId Id of the start call the frames are captured for
+             */
+            sendFrame(startId) {
+                return __awaiter(this, void 0, void 0, function* () {
+                    const canvas = this.drawFrame();
+                    const calls = [];
+                    if (this._frameDataInvokeIdentifier) {
+                        // Encoding to a blob doesn't block the page, and the bytes are sent as binary data (a lot faster than a base64 string)
+                        const blob = yield new Promise(resolve => canvas.toBlob(resolve, this._frameType, this._frameQuality));
+                        const data = blob ? new Uint8Array(yield blob.arrayBuffer()) : null;
+                        if (startId !== this._startId || data === null)
+                            return;
+                        // The type of the blob is the actual type of the image, as browsers fall back to png if a type isn't supported
+                        calls.push(this._dotnetObject.invokeMethodAsync(this._frameDataInvokeIdentifier, data, blob.type, canvas.width, canvas.height));
+                    }
+                    if (this._callInvoke)
+                        calls.push(this._dotnetObject.invokeMethodAsync(this._invokeIdentifier, canvas.toDataURL(this._frameType, this._frameQuality)));
+                    yield Promise.all(calls);
+                });
+            }
+            /**
+             * Draws the current frame of the video on the canvas
+             * @returns The canvas with the current frame
+             */
+            drawFrame() {
+                var _a;
+                (_a = this._canvas) !== null && _a !== void 0 ? _a : (this._canvas = document.createElement("canvas"));
+                // Use the actual resolution of the stream, as it can differ from the constraints (e.g. rotated on mobile devices in portrait mode).
+                // Fall back to the constraints if the video metadata isn't loaded yet
+                const width = this._video.videoWidth || this._constraints.video["width"];
+                const height = this._video.videoHeight || this._constraints.video["height"];
+                // Only resize if needed, as resizing reallocates the canvas
+                if (this._canvas.width !== width)
+                    this._canvas.width = width;
+                if (this._canvas.height !== height)
+                    this._canvas.height = height;
                 // Draw the current image of the stream on the canvas
-                canvas.getContext("2d").drawImage(this._video, 0, 0);
-                // Get the iamge as 64base string
-                return canvas.toDataURL("image/png");
-            }
-            /**
-             * Handles the videos ontimeupdate event and invokes the dotnet object with the img
-             */
-            onFrame(ev) {
-                if (this._callInvoke && this._streamActive)
-                    this.invokeDotnetObject(this._lastFrame = this.getCurrentCanvasFrame());
+                this._canvas.getContext("2d").drawImage(this._video, 0, 0);
+                return this._canvas;
             }
         }
         Scripts.CameraStreamerInterop = CameraStreamerInterop;

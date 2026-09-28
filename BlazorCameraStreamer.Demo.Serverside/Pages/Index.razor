@@ -1,14 +1,16 @@
 ﻿@page "/"
 
-<p>FrameCount: @frameCount</p>
+<p>Frames: @frameCount | FPS: @fps | Last frame: @lastFrameInfo</p>
 
 <CameraStreamer @ref=CameraStreamerReference
                 Width=1920
                 Height=1080
                 OnRendered=OnRenderedHandler
-                OnFrame=OnFrameHandler
+                OnFrameData=OnFrameDataHandler
+                FrameFormat=CameraFrameFormat.Jpeg
                 Style="width: 480px; height: 270px;"
                 CameraID=@cameraId
+                FacingMode=CameraFacingMode.Environment
                 Autostart />
 
 <div>
@@ -20,6 +22,16 @@
     </button>
 </div>
 
+<div>
+    <select @onchange=OnCameraSelected>
+        <option value="">Default (rear camera preferred)</option>
+        @foreach (var camera in cameras)
+        {
+            <option value=@camera.DeviceId selected=@(camera.DeviceId == cameraId)>@GetCameraName(camera)</option>
+        }
+    </select>
+</div>
+
 <button @onclick=GetCurrentFrame>
     Get Current Frame
 </button>
@@ -29,7 +41,7 @@
 @if (!string.IsNullOrEmpty(imageData))
 {
     <img src=@imageData
-         style="width: 480px; height: 270px;" />
+         style="width: 480px; height: 270px; object-fit: contain;" />
 }
 
 @code
@@ -40,40 +52,80 @@
 
     private int frameCount;
 
+    private int fps;
+
+    private int framesThisSecond;
+
+    private DateTime secondStart = DateTime.UtcNow;
+
+    private string lastFrameInfo = "-";
+
     private string imageData;
 
-    private async void OnRenderedHandler()
+    private MediaDeviceInfoModel[] cameras = [];
+
+    private async Task OnRenderedHandler()
     {
         frameCount = 0;
 
-        // Check camera-access or ask user, if it's not allowed currently
-        if (await CameraStreamerReference.GetCameraAccessAsync())
-        {
-            // Reloading re-initializes the stream and starts the
-            // stream automatically if the Autostart parameter is set
-            await CameraStreamerReference.ReloadAsync();
+        // With Autostart, this is called after the stream is started (the browser asked the user for the camera access if needed).
+        // The names of the cameras are only available after the access is granted
+        cameras = await CameraStreamerReference.GetCameraDevicesAsync();
 
-            // If Autostart is not set, you have to manually start the stream again
-            /* await CameraStreamerReference.StartAsync(); */
-        }
+        // Without Autostart, ask for the access (if it's not allowed currently) and start the stream manually
+        /* if (await CameraStreamerReference.GetCameraAccessAsync())
+            await CameraStreamerReference.StartAsync(); */
     }
 
-    private async void Start()
+    private async Task Start()
     {
         await CameraStreamerReference.StartAsync();
     }
 
-    private async void Stop()
+    private async Task Stop()
     {
         await CameraStreamerReference.StopAsync();
     }
 
-    private void OnFrameHandler(string _)
+    private void OnFrameDataHandler(CameraFrame frame)
     {
         ++frameCount;
+        ++framesThisSecond;
+
+        lastFrameInfo = $"{frame.Width}x{frame.Height}, {frame.ContentType}, {frame.Data.Length / 1024} KB";
+
+        // Update the frames per second once every second
+        if (DateTime.UtcNow - secondStart >= TimeSpan.FromSeconds(1))
+        {
+            fps = framesThisSecond;
+            framesThisSecond = 0;
+            secondStart = DateTime.UtcNow;
+        }
     }
 
-    private async void GetCurrentFrame()
+    private async Task OnCameraSelected(ChangeEventArgs e)
+    {
+        // An empty value is the default camera, which the browser chooses based on the FacingMode
+        cameraId = e.Value as string is { Length: > 0 } id ? id : null;
+
+        await CameraStreamerReference.ChangeCameraAsync(cameraId);
+    }
+
+    private static string GetCameraName(MediaDeviceInfoModel camera)
+    {
+        string name = string.IsNullOrEmpty(camera.Label) ? "Unnamed camera" : camera.Label;
+
+        // The facing mode is only known if the browser reports it (usually not for desktop webcams)
+        return camera.FacingMode switch
+        {
+            CameraFacingMode.User => $"{name} (front)",
+            CameraFacingMode.Environment => $"{name} (rear)",
+            _ => name
+        };
+    }
+
+    // Return a Task (not void) so the page re-renders after the frame is received
+    private async Task GetCurrentFrame()
     {
         imageData = await CameraStreamerReference.GetCurrentFrameAsync();
     }

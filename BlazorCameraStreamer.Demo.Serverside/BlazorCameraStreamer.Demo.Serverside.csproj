@@ -1,16 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <RunPostBuildEvent>Always</RunPostBuildEvent>
+    <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BlazorCameraStreamer\BlazorCameraStreamer.csproj" />
   </ItemGroup>
-
-  <Target Name="CopyJavascriptFile" AfterTargets="PostBuildEvent">
-    <Copy SourceFiles="..\BlazorCameraStreamer\wwwroot\js\CameraStreamer.js" DestinationFolder="$(OutDir)\wwwroot\js" />
-  </Target>
 
 </Project>

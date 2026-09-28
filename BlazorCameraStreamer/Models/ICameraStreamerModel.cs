@@ -9,9 +9,9 @@ namespace BlazorCameraStreamer.Models
     public interface ICameraStreamerModel : IAsyncDisposable
     {
         /// <summary>
-        /// Starts the camera stream
+        /// Starts the camera stream. If the site has no access to the camera yet, the browser asks the user for it. Completes when the stream is started (or couldn't be started)
         /// </summary>
-        /// <param name="camera">DeviceID of the camera, if left empty the first camera found will be used</param>
+        /// <param name="camera">DeviceID of the camera, if left empty the first camera found will be used (or the camera matching the facing mode, if one is set)</param>
         public Task StartAsync(string camera = null);
 
         /// <summary>
@@ -20,7 +20,7 @@ namespace BlazorCameraStreamer.Models
         public Task StopAsync();
 
         /// <summary>
-        /// Changes the current camera that is being used as streaming device
+        /// Changes the current camera that is being used as streaming device. Completes when the stream of the new camera is started (or couldn't be started)
         /// </summary>
         public Task ChangeCameraAsync(string newId);
 

@@ -10,14 +10,15 @@ A Blazor Component library that adds a simple to use camera-streaming functional
 
 ## Features
   - Stream cameras in a html `<video>` element
-  - Retrieve each frame of the stream on a callback
-  - Get a list of all avaliable cameras
+  - Retrieve each frame of the stream on a callback (as data-url or bytes, in png, jpeg or webp format, with an optional frame rate limit)
+  - Get a list of all avaliable cameras (including whether it's a front or rear camera, if the browser reports it)
+  - Prefer the front or rear camera (e.g. on phones)
   - Ask the user for access to cameras
   - Get the currently streamed frame
 
  The library works only with video-devices, there's no support for audio devices (at least for now)
 
- 💡 Want a new feature to be implemented, or you found/have any issues?  Create a [new Issue](https://github.com/baltermia/blazor-cookies/issues/new/choose).
+ 💡 Want a new feature to be implemented, or you found/have any issues?  Create a [new Issue](https://github.com/baltermia/blazor-camera-streamer/issues/new/choose).
   
 ## Examples
 Implementations of the library can be found in the following projects:
@@ -26,6 +27,8 @@ Implementations of the library can be found in the following projects:
 
 ## Browser Support
 The component works both on Serverside and WASM Blazor.
+
+It requires .NET 8 or newer. For .NET 6 and .NET 7, use version 3.x of the package (`dotnet add package BlazorCameraStreamer --version 3.0.1`).
 
 ## Installation Guide
 
@@ -93,6 +96,7 @@ If you want a to use most of the features of the component, it would look more l
                 OnFrame="OnFrameHandler"
                 Style="width: 480px; height: 270px;"
                 CameraID="@cameraId"
+                FacingMode="CameraFacingMode.Environment"
                 Autostart />
 ```
 
@@ -102,18 +106,15 @@ CameraStreamer CameraStreamerReference;
 
 string cameraId = null;
 
-private async void OnRenderedHandler()
+private async Task OnRenderedHandler()
 {
-    // Check camera-access or ask user, if it's not allowed currently
-    if (await CameraStreamerReference.GetCameraAccessAsync())
-    {
-        // Reloading re-initializes the stream and starts the
-        // stream automatically if the Autostart parameter is set
-        await CameraStreamerReference.ReloadAsync();
+    // With Autostart, the stream is already started at this point
+    // (the browser asked the user for the camera access if needed)
+    MediaDeviceInfoModel[] cameras = await CameraStreamerReference.GetCameraDevicesAsync();
 
-        // If Autostart is not set, you have to manually start the stream again
-        /* await CameraStreamerReference.StartAsync(); */
-    }
+    // Without Autostart, ask for the camera access and start the stream manually
+    /* if (await CameraStreamerReference.GetCameraAccessAsync())
+        await CameraStreamerReference.StartAsync(); */
 }
 
 private void OnFrameHandler(string data)
@@ -136,7 +137,9 @@ These two parameters specify the resolution of the stream - NOT the display size
 
 **OnRendered**
 
-As soon as the component is completely rendered, this callback is invoked - although only on the first render of the instance (so a reload will definitely fire it again).
+As soon as the component is completely rendered, this callback is invoked - although only on the first render of the instance. If `Autostart` is set, it's invoked after the stream is started.
+
+> **Note**: In versions before 4.0, the camera access had to be checked and the component reloaded (`ReloadAsync()`) in this callback. This is no longer needed, `Autostart` asks for the access itself.
 
 **OnFrame**
 
@@ -145,6 +148,26 @@ This is one of the key features of the component that other similar components l
 Bitmap bmp = new(new MemoryStream(Convert.FromBase64String(data)));
 ```
 You can then do anything with this `Bitmap` object. E.g. use the object to decode barcodes. 
+
+The data is a data-url (e.g. `data:image/png;base64,...`), so it can also be used directly as `src` of an `<img>` element. A new frame is only captured after the callback of the previous one completed, so if your callback takes longer than a frame, frames are skipped instead of piling up.
+
+**OnFrameData**
+
+Works like `OnFrame`, but the callback receives the image as bytes instead of a base64 string, which is faster (especially on ServerSide Blazor, as less data is sent through SignalR). The `CameraFrame` also contains the `ContentType` and the size of the image:
+```csharp
+private void OnFrameDataHandler(CameraFrame frame)
+{
+    Bitmap bmp = new(new MemoryStream(frame.Data));
+}
+```
+
+**FrameRate**
+
+The maximum number of frames per second for the `OnFrame` and `OnFrameData` callbacks. If it's not set, every frame of the stream is captured (as long as your callback keeps up).
+
+**FrameFormat and FrameQuality**
+
+The image format of the captured frames: `CameraFrameFormat.Png` (default, lossless), `CameraFrameFormat.Jpeg` or `CameraFrameFormat.Webp`. Jpeg and Webp are a lot smaller and faster to encode, and their quality can be set with `FrameQuality` (between 0 and 1). Browsers that don't support a format fall back to png, the actual format is always part of the frame (the data-url prefix or `CameraFrame.ContentType`).
 
 **Style (Id & Class)**
 
@@ -155,6 +178,10 @@ In the code above I use the `Style` parameter to set the display size of the str
 **CameraID**
 
 This is the deviceId that is used by default if no other id is specified (otherwise the deviceId is given as a parameter with the `StartAsync()` method.
+
+**FacingMode**
+
+The preferred direction of the camera, e.g. `CameraFacingMode.Environment` for the rear camera or `CameraFacingMode.User` for the front camera of a phone. It's only used if no camera-id is specified, and if the device has no camera facing this direction (e.g. a laptop), another camera is used. Changes to this parameter are applied on reload.
 
 **Autostart**
 
@@ -167,3 +194,15 @@ If you dont want to use the `OnFrame`-Callback, you can receive frames individua
 ```csharp
 string imageData = await CameraStreamerReference.GetCurrentFrameAsync();
 ```
+
+---
+
+To let the user choose a camera, you can get a list of all cameras with the `GetCameraDevicesAsync`-Method and switch to one with `ChangeCameraAsync`:
+
+```csharp
+MediaDeviceInfoModel[] cameras = await CameraStreamerReference.GetCameraDevicesAsync();
+
+await CameraStreamerReference.ChangeCameraAsync(cameras[0].DeviceId);
+```
+
+Each camera has a `DeviceId`, a `Label` (its name) and a `FacingMode`. Keep in mind that browsers only provide the names and ids after the user granted access to the camera (see `GetCameraAccessAsync`). The `FacingMode` is `null` if the browser doesn't report it, which is usually the case for desktop webcams and in browsers that don't support it (e.g. Firefox).
