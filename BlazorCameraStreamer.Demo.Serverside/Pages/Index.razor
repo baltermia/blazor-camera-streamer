@@ -1,12 +1,13 @@
 ﻿@page "/"
 
-<p>FrameCount: @frameCount</p>
+<p>Frames: @frameCount | FPS: @fps | Last frame: @lastFrameInfo</p>
 
 <CameraStreamer @ref=CameraStreamerReference
                 Width=1920
                 Height=1080
                 OnRendered=OnRenderedHandler
-                OnFrame=OnFrameHandler
+                OnFrameData=OnFrameDataHandler
+                FrameFormat=CameraFrameFormat.Jpeg
                 Style="width: 480px; height: 270px;"
                 CameraID=@cameraId
                 FacingMode=CameraFacingMode.Environment
@@ -51,6 +52,14 @@
 
     private int frameCount;
 
+    private int fps;
+
+    private int framesThisSecond;
+
+    private DateTime secondStart = DateTime.UtcNow;
+
+    private string lastFrameInfo = "-";
+
     private string imageData;
 
     private MediaDeviceInfoModel[] cameras = [];
@@ -84,9 +93,20 @@
         await CameraStreamerReference.StopAsync();
     }
 
-    private void OnFrameHandler(string _)
+    private void OnFrameDataHandler(CameraFrame frame)
     {
         ++frameCount;
+        ++framesThisSecond;
+
+        lastFrameInfo = $"{frame.Width}x{frame.Height}, {frame.ContentType}, {frame.Data.Length / 1024} KB";
+
+        // Update the frames per second once every second
+        if (DateTime.UtcNow - secondStart >= TimeSpan.FromSeconds(1))
+        {
+            fps = framesThisSecond;
+            framesThisSecond = 0;
+            secondStart = DateTime.UtcNow;
+        }
     }
 
     private async Task OnCameraSelected(ChangeEventArgs e)

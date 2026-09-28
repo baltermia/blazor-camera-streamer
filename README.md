@@ -10,7 +10,7 @@ A Blazor Component library that adds a simple to use camera-streaming functional
 
 ## Features
   - Stream cameras in a html `<video>` element
-  - Retrieve each frame of the stream on a callback
+  - Retrieve each frame of the stream on a callback (as data-url or bytes, in png, jpeg or webp format, with an optional frame rate limit)
   - Get a list of all avaliable cameras (including whether it's a front or rear camera, if the browser reports it)
   - Prefer the front or rear camera (e.g. on phones)
   - Ask the user for access to cameras
@@ -147,6 +147,26 @@ This is one of the key features of the component that other similar components l
 Bitmap bmp = new(new MemoryStream(Convert.FromBase64String(data)));
 ```
 You can then do anything with this `Bitmap` object. E.g. use the object to decode barcodes. 
+
+The data is a data-url (e.g. `data:image/png;base64,...`), so it can also be used directly as `src` of an `<img>` element. A new frame is only captured after the callback of the previous one completed, so if your callback takes longer than a frame, frames are skipped instead of piling up.
+
+**OnFrameData**
+
+Works like `OnFrame`, but the callback receives the image as bytes instead of a base64 string, which is faster (especially on ServerSide Blazor, as less data is sent through SignalR). The `CameraFrame` also contains the `ContentType` and the size of the image:
+```csharp
+private void OnFrameDataHandler(CameraFrame frame)
+{
+    Bitmap bmp = new(new MemoryStream(frame.Data));
+}
+```
+
+**FrameRate**
+
+The maximum number of frames per second for the `OnFrame` and `OnFrameData` callbacks. If it's not set, every frame of the stream is captured (as long as your callback keeps up).
+
+**FrameFormat and FrameQuality**
+
+The image format of the captured frames: `CameraFrameFormat.Png` (default, lossless), `CameraFrameFormat.Jpeg` or `CameraFrameFormat.Webp`. Jpeg and Webp are a lot smaller and faster to encode, and their quality can be set with `FrameQuality` (between 0 and 1). Browsers that don't support a format fall back to png, the actual format is always part of the frame (the data-url prefix or `CameraFrame.ContentType`).
 
 **Style (Id & Class)**
 

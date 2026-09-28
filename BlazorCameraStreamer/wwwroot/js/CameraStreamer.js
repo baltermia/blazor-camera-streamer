@@ -21,6 +21,10 @@ var BlazorCameraStreamer;
                  */
                 this._streamActive = false;
                 /**
+                 * Time (performance.now) at which the last frame was sent to the frame callbacks
+                 */
+                this._lastFrameTime = 0;
+                /**
                  * Incremented on every stop. Used to detect streams of an outdated start call (e.g. the streamer was stopped or disposed before the camera was ready)
                  */
                 this._startId = 0;
@@ -37,13 +41,21 @@ var BlazorCameraStreamer;
              * @param api Reference to the dotnet object that should recieve callbacks
              * @param camera Device-string (id) of the camera that should be used for the stream
              * @param facingMode Preferred direction of the camera (e.g. "environment"), used if no deviceId is given when starting
+             * @param onFrameDataInvokeName Name of the method that should be invoked with the binary data of each frame (null if not used)
+             * @param frameRate Maximum number of frames per second for the frame callbacks (null or 0 for no limit)
+             * @param frameType Image type of the captured frames (e.g. "image/jpeg")
+             * @param frameQuality Quality of the captured frames between 0 and 1, only used for lossy types like jpeg and webp (null for the browser default)
              */
-            init(video, callOnFrameInvoke, api = null, onFrameInvokeName = null, width = 640, height = 360, facingMode = null) {
+            init(video, callOnFrameInvoke, api = null, onFrameInvokeName = null, width = 640, height = 360, facingMode = null, onFrameDataInvokeName = null, frameRate = null, frameType = "image/png", frameQuality = null) {
                 this._video = video;
                 this._facingMode = facingMode;
                 this._dotnetObject = api;
                 this._invokeIdentifier = onFrameInvokeName;
                 this._callInvoke = this._invokeIdentifier === null || this._dotnetObject === null ? false : callOnFrameInvoke;
+                this._frameDataInvokeIdentifier = this._dotnetObject === null ? null : onFrameDataInvokeName;
+                this._frameRate = frameRate;
+                this._frameType = frameType || "image/png";
+                this._frameQuality = frameQuality;
                 this._constraints = {
                     audio: false,
                     video: {
@@ -77,16 +89,21 @@ var BlazorCameraStreamer;
                     this._stream = mediaStream;
                     // Add the stream of the chosen camera as src on the video element
                     this._video.srcObject = this._stream;
-                    if (this._callInvoke)
-                        // Add with anonymous function, not assigning directly (neccesarry, otherwise the method isn't in the scope anymore, e.g. can't access properties etc.)
-                        this._video.ontimeupdate = (ev) => this.onFrame(ev);
                 });
                 // Start the video element as soon as all metadata is loaded (this is needed as we get the mediastream object asynchronously in the code above)
                 this._video.onloadedmetadata = (ev) => __awaiter(this, void 0, void 0, function* () {
                     if (startId !== this._startId)
                         return;
                     yield this._video.play();
+                    // The streamer was stopped or restarted while starting the video
+                    if (startId !== this._startId)
+                        return;
+                    // The event can fire again (e.g. if the metadata changes), but the frames should only be captured once per start call
+                    const firstPlay = !this._streamActive;
                     this._streamActive = true;
+                    // Start capturing the frames for the callbacks. Only now that the video is playing, as requestVideoFrameCallback stops firing if it's requested before
+                    if (firstPlay && (this._callInvoke || this._frameDataInvokeIdentifier))
+                        this.requestFrame(startId);
                 });
             }
             /**
@@ -101,8 +118,6 @@ var BlazorCameraStreamer;
                 // Stop all tracks of the stream (without doing this the stream would still be processed and the browser will show that the camera is still in use by the site)
                 (_b = this._stream) === null || _b === void 0 ? void 0 : _b.getTracks().forEach(t => t.stop());
                 this._streamActive = false;
-                if (this._video !== null)
-                    this._video.ontimeupdate = null;
             }
             /**
              * Changes the current camera (if the camera is the same as the one at the moment nothing will happen)
@@ -159,10 +174,12 @@ var BlazorCameraStreamer;
                     return null;
                 }
             }
+            /**
+             * Captures the current frame of the stream
+             * @returns The image as data-url (e.g. "data:image/png;base64,...")
+             */
             getCurrentFrame() {
-                return (this._callInvoke && this._streamActive) ?
-                    Promise.resolve(this._lastFrame) :
-                    Promise.resolve(this.getCurrentCanvasFrame());
+                return Promise.resolve(this.drawFrame().toDataURL(this._frameType, this._frameQuality));
             }
             /**
              * Releases all resources and stops the stream. The object must be reinitialized before it can be used again
@@ -174,33 +191,87 @@ var BlazorCameraStreamer;
                 this._dotnetObject = null;
                 this._stream = null;
                 this._constraints = null;
-                this._lastFrame = null;
+                this._canvas = null;
             }
             /**
-             * Invokes the dotnet object on the provided method with the given data
-             * @param data The string the dotnet method recieves
+             * Requests the frame callback for the next frame of the video. Uses requestVideoFrameCallback if supported (called for every new frame of the video), otherwise requestAnimationFrame
+             * @param startId Id of the start call the frames are captured for
              */
-            invokeDotnetObject(data) {
-                if (this._callInvoke)
-                    this._dotnetObject.invokeMethodAsync(this._invokeIdentifier, data);
+            requestFrame(startId) {
+                // The streamer was stopped, restarted or disposed in the meantime (this ends the loop)
+                if (startId !== this._startId)
+                    return;
+                if ("requestVideoFrameCallback" in this._video)
+                    this._video.requestVideoFrameCallback(() => this.onFrame(startId));
+                else
+                    requestAnimationFrame(() => this.onFrame(startId));
             }
-            getCurrentCanvasFrame() {
-                let canvas = document.createElement("canvas");
+            /**
+             * Captures the current frame and invokes the dotnet callbacks with it (if the frame rate allows it), then requests the next frame
+             * @param startId Id of the start call the frames are captured for
+             */
+            onFrame(startId) {
+                return __awaiter(this, void 0, void 0, function* () {
+                    if (startId !== this._startId)
+                        return;
+                    // Allow a small tolerance, as the frames of the video don't arrive in exact intervals
+                    const minInterval = this._frameRate > 0 ? 1000 / this._frameRate * 0.9 : 0;
+                    if (this._streamActive && performance.now() - this._lastFrameTime >= minInterval) {
+                        this._lastFrameTime = performance.now();
+                        try {
+                            // Wait until the callbacks are completed, so that no more frames are sent than the dotnet side can process (frames in between are skipped)
+                            yield this.sendFrame(startId);
+                        }
+                        catch (e) {
+                            // Errors after stopping are expected (e.g. the dotnet object is already disposed)
+                            if (startId === this._startId)
+                                console.error(e);
+                        }
+                    }
+                    this.requestFrame(startId);
+                });
+            }
+            /**
+             * Captures the current frame and invokes the dotnet callbacks with it
+             * @param startId Id of the start call the frames are captured for
+             */
+            sendFrame(startId) {
+                return __awaiter(this, void 0, void 0, function* () {
+                    const canvas = this.drawFrame();
+                    const calls = [];
+                    if (this._frameDataInvokeIdentifier) {
+                        // Encoding to a blob doesn't block the page, and the bytes are sent as binary data (a lot faster than a base64 string)
+                        const blob = yield new Promise(resolve => canvas.toBlob(resolve, this._frameType, this._frameQuality));
+                        const data = blob ? new Uint8Array(yield blob.arrayBuffer()) : null;
+                        if (startId !== this._startId || data === null)
+                            return;
+                        // The type of the blob is the actual type of the image, as browsers fall back to png if a type isn't supported
+                        calls.push(this._dotnetObject.invokeMethodAsync(this._frameDataInvokeIdentifier, data, blob.type, canvas.width, canvas.height));
+                    }
+                    if (this._callInvoke)
+                        calls.push(this._dotnetObject.invokeMethodAsync(this._invokeIdentifier, canvas.toDataURL(this._frameType, this._frameQuality)));
+                    yield Promise.all(calls);
+                });
+            }
+            /**
+             * Draws the current frame of the video on the canvas
+             * @returns The canvas with the current frame
+             */
+            drawFrame() {
+                var _a;
+                (_a = this._canvas) !== null && _a !== void 0 ? _a : (this._canvas = document.createElement("canvas"));
                 // Use the actual resolution of the stream, as it can differ from the constraints (e.g. rotated on mobile devices in portrait mode).
                 // Fall back to the constraints if the video metadata isn't loaded yet
-                canvas.width = this._video.videoWidth || this._constraints.video["width"];
-                canvas.height = this._video.videoHeight || this._constraints.video["height"];
+                const width = this._video.videoWidth || this._constraints.video["width"];
+                const height = this._video.videoHeight || this._constraints.video["height"];
+                // Only resize if needed, as resizing reallocates the canvas
+                if (this._canvas.width !== width)
+                    this._canvas.width = width;
+                if (this._canvas.height !== height)
+                    this._canvas.height = height;
                 // Draw the current image of the stream on the canvas
-                canvas.getContext("2d").drawImage(this._video, 0, 0);
-                // Get the iamge as 64base string
-                return canvas.toDataURL("image/png");
-            }
-            /**
-             * Handles the videos ontimeupdate event and invokes the dotnet object with the img
-             */
-            onFrame(ev) {
-                if (this._callInvoke && this._streamActive)
-                    this.invokeDotnetObject(this._lastFrame = this.getCurrentCanvasFrame());
+                this._canvas.getContext("2d").drawImage(this._video, 0, 0);
+                return this._canvas;
             }
         }
         Scripts.CameraStreamerInterop = CameraStreamerInterop;

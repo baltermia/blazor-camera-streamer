@@ -44,10 +44,38 @@ namespace BlazorCameraStreamer
         public int Height { get; set; } = 360;
 
         /// <summary>
-        /// Callback that is invoked on each new frame of the stream
+        /// Callback that is invoked on each new frame of the stream with the image as data-url (e.g. "data:image/png;base64,..."). A new frame is only captured
+        /// after the callback of the previous one completed, so frames are skipped if the callback takes longer. See <see cref="FrameRate"/> to limit the frames per second
         /// </summary>
         [Parameter]
         public EventCallback<string> OnFrame { get; set; }
+
+        /// <summary>
+        /// Callback that is invoked on each new frame of the stream with the binary data of the image. This is faster than <see cref="OnFrame"/>,
+        /// as the image doesn't need to be converted to a base64 string. A new frame is only captured after the callback of the previous one completed
+        /// </summary>
+        [Parameter]
+        public EventCallback<CameraFrame> OnFrameData { get; set; }
+
+        /// <summary>
+        /// Maximum number of frames per second for the <see cref="OnFrame"/> and <see cref="OnFrameData"/> callbacks. If not set, every frame of the stream is captured
+        /// (as long as the callbacks keep up). Changes are applied on reload
+        /// </summary>
+        [Parameter]
+        public double? FrameRate { get; set; } = null;
+
+        /// <summary>
+        /// Image format of the captured frames (used for the frame callbacks and <see cref="GetCurrentFrameAsync"/>). Changes are applied on reload
+        /// </summary>
+        [Parameter]
+        public CameraFrameFormat FrameFormat { get; set; } = CameraFrameFormat.Png;
+
+        /// <summary>
+        /// Quality of the captured frames between 0 and 1, only used for <see cref="CameraFrameFormat.Jpeg"/> and <see cref="CameraFrameFormat.Webp"/>.
+        /// If not set, the browser default is used (usually 0.92). Changes are applied on reload
+        /// </summary>
+        [Parameter]
+        public double? FrameQuality { get; set; } = null;
 
         /// <summary>
         /// Callback that is called after the first complete render of the component
@@ -100,7 +128,7 @@ namespace BlazorCameraStreamer
         /// <returns></returns>
         public async Task ReloadAsync()
         {
-            await streamerApi.InitializeAsync(VideoRef, Width, Height, OnFrame, FacingMode);
+            await streamerApi.InitializeAsync(VideoRef, Width, Height, OnFrame, FacingMode, OnFrameData, FrameRate, FrameFormat, FrameQuality);
 
             if (Autostart)
                 await StartAsync();
