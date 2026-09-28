@@ -11,7 +11,7 @@ namespace BlazorCameraStreamer.Models
         /// <summary>
         /// Starts the camera stream
         /// </summary>
-        /// <param name="camera">DeviceID of the camera, if left empty the first camera found will be used</param>
+        /// <param name="camera">DeviceID of the camera, if left empty the first camera found will be used (or the camera matching the facing mode, if one is set)</param>
         public Task StartAsync(string camera = null);
 
         /// <summary>

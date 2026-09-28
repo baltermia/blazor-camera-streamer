@@ -12,6 +12,18 @@ namespace BlazorCameraStreamer.Scripts {
     }
 
     /**
+     * Information about a camera, which is returned to the dotnet side (MediaDeviceInfoModel)
+     */
+    interface CameraDeviceInfo {
+        deviceId: string;
+        label: string;
+        /**
+         * Direction the camera is facing ("user", "environment", "left" or "right"), null if unknown
+         */
+        facingMode: string;
+    }
+
+    /**
      * This class is designed to work with Microsoft.JSInterop in C# Blazor and helps streaming webcams in a video element
      */
     export class CameraStreamerInterop {
@@ -66,6 +78,11 @@ namespace BlazorCameraStreamer.Scripts {
         private _cameraId: string;
 
         /**
+         * Preferred direction of the camera (e.g. "environment"), used if no deviceId is given when starting
+         */
+        private _facingMode: string;
+
+        /**
          * Returns a new instance of the CameraStreamerInterop class
          */
         public static createInstance(): CameraStreamerInterop {
@@ -77,9 +94,11 @@ namespace BlazorCameraStreamer.Scripts {
          * @param video ElementReference of the video
          * @param api Reference to the dotnet object that should recieve callbacks
          * @param camera Device-string (id) of the camera that should be used for the stream
+         * @param facingMode Preferred direction of the camera (e.g. "environment"), used if no deviceId is given when starting
          */
-        public init(video: HTMLVideoElement, callOnFrameInvoke: boolean, api: DotNetObjectReference = null, onFrameInvokeName: string = null, width: number = 640, height: number = 360): void {
+        public init(video: HTMLVideoElement, callOnFrameInvoke: boolean, api: DotNetObjectReference = null, onFrameInvokeName: string = null, width: number = 640, height: number = 360, facingMode: string = null): void {
             this._video = video;
+            this._facingMode = facingMode;
             this._dotnetObject = api;
             this._invokeIdentifier = onFrameInvokeName;
             this._callInvoke = this._invokeIdentifier === null || this._dotnetObject === null ? false : callOnFrameInvoke;
@@ -109,6 +128,10 @@ namespace BlazorCameraStreamer.Scripts {
             // Write the deviceId into the _constraints object. Only require a specific camera if an id is given, as an empty id
             // (e.g. from the device list before the camera access is granted) would fail with an OverconstrainedError
             this._constraints.video["deviceId"] = cameraId ? { exact: cameraId } : undefined;
+
+            // Without a specific camera, prefer the one facing the given direction. Ideal instead of exact,
+            // so devices without such a camera (e.g. a laptop without rear camera) fall back to another one
+            this._constraints.video["facingMode"] = !cameraId && this._facingMode ? { ideal: this._facingMode } : undefined;
 
             navigator.mediaDevices.getUserMedia(this._constraints).then(mediaStream => {
                 // The streamer was stopped, restarted or disposed while waiting for the camera, release it immediately
@@ -185,14 +208,31 @@ namespace BlazorCameraStreamer.Scripts {
         }
 
         /**
-         * Gets all media-devices of kind 'videoinput' and returns them as a MediaDeviceInfo array
+         * Gets all media-devices of kind 'videoinput' and returns them as a CameraDeviceInfo array
          */
-        public static getCameraDeviceList(): Promise<MediaDeviceInfo[]> {
+        public static getCameraDeviceList(): Promise<CameraDeviceInfo[]> {
             return navigator.mediaDevices.enumerateDevices()
                 // Wait until all devices are enumerated
                 .then(l => l
                     // Filters out all videoinputs (the streamer doesn't support audio)
-                    .filter(d => d.kind === "videoinput"));
+                    .filter(d => d.kind === "videoinput")
+                    .map(d => ({ deviceId: d.deviceId, label: d.label, facingMode: CameraStreamerInterop.getFacingMode(d) })));
+        }
+
+        /**
+         * Gets the direction the camera is facing, if the browser reports it (not supported by all browsers, and usually not reported for desktop webcams)
+         * @returns "user", "environment", "left", "right" or null if unknown
+         */
+        private static getFacingMode(device: MediaDeviceInfo): string {
+            try {
+                // getCapabilities only exists on InputDeviceInfo, which not all browsers support (e.g. Firefox)
+                const facingMode = (device as InputDeviceInfo).getCapabilities?.().facingMode?.[0];
+
+                // Only return known values, as they're converted to an enum on the dotnet side
+                return facingMode && ["user", "environment", "left", "right"].includes(facingMode) ? facingMode : null;
+            } catch {
+                return null;
+            }
         }
 
         public getCurrentFrame(): Promise<string> {

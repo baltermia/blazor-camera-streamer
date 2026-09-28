@@ -62,6 +62,13 @@ namespace BlazorCameraStreamer
         public string CameraID { get; set; } = null;
 
         /// <summary>
+        /// Preferred direction of the camera (e.g. <see cref="CameraFacingMode.Environment"/> for the rear camera of a phone). Only used if no camera-deviceId is specified.
+        /// If the device has no camera facing this direction, another camera is used. Changes are applied on reload
+        /// </summary>
+        [Parameter]
+        public CameraFacingMode? FacingMode { get; set; } = null;
+
+        /// <summary>
         /// States if the stream should automatically start on initialization (render) and reload
         /// </summary>
         [Parameter]
@@ -93,7 +100,7 @@ namespace BlazorCameraStreamer
         /// <returns></returns>
         public async Task ReloadAsync()
         {
-            await streamerApi.InitializeAsync(VideoRef, Width, Height, OnFrame);
+            await streamerApi.InitializeAsync(VideoRef, Width, Height, OnFrame, FacingMode);
 
             if (Autostart)
                 await StartAsync();

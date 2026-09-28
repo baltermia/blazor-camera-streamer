@@ -42,6 +42,11 @@ namespace BlazorCameraStreamer
         private EventCallback<string> OnFrameCallback;
 
         /// <summary>
+        /// Preferred direction of the camera, used if no camera is given when starting the stream
+        /// </summary>
+        private CameraFacingMode? FacingMode;
+
+        /// <summary>
         /// Creates a new instance of the CameraStreamerController class
         /// </summary>
         /// <param name="runtime">Runtime used for javascript interopability</param>
@@ -57,8 +62,9 @@ namespace BlazorCameraStreamer
         /// <param name="width"></param>
         /// <param name="height"></param>
         /// <param name="onFrameCallback"></param>
+        /// <param name="facingMode">Preferred direction of the camera, used if no camera is given when starting the stream</param>
         /// <returns></returns>
-        public async Task InitializeAsync(ElementReference videoReference, int width = 640, int height = 360, EventCallback<string> onFrameCallback = default)
+        public async Task InitializeAsync(ElementReference videoReference, int width = 640, int height = 360, EventCallback<string> onFrameCallback = default, CameraFacingMode? facingMode = null)
         {
             if (IsInitialized)
             {
@@ -66,12 +72,14 @@ namespace BlazorCameraStreamer
             }
 
             OnFrameCallback = onFrameCallback;
+            FacingMode = facingMode;
 
             JSObject = await JSRuntime.InvokeAsync<IJSObjectReference>(StaticInteropPath + ".createInstance");
 
             DotNetReference = DotNetObjectReference.Create(this);
 
-            await JSObject.InvokeVoidAsync("init", videoReference, OnFrameCallback.HasDelegate, DotNetReference, nameof(OnFrame), width, height);
+            // The facing mode is passed as lowercase string, as used by the MediaStream API (e.g. "environment")
+            await JSObject.InvokeVoidAsync("init", videoReference, OnFrameCallback.HasDelegate, DotNetReference, nameof(OnFrame), width, height, FacingMode?.ToString().ToLowerInvariant());
 
             IsInitialized = true;
         }
@@ -79,8 +87,8 @@ namespace BlazorCameraStreamer
         /// <inheritdoc/>
         public async Task StartAsync(string camera = null)
         {
-            // Use the first found camera if no camrea is given
-            if (string.IsNullOrEmpty(camera))
+            // Use the first found camera if no camrea is given (if a facing mode is set, the browser chooses the camera based on it instead)
+            if (string.IsNullOrEmpty(camera) && FacingMode is null)
                 camera = (await GetCameraDevicesAsync()).FirstOrDefault()?.DeviceId;
 
             await JSObject.InvokeVoidAsync("start", camera);

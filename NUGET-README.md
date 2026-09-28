@@ -9,7 +9,8 @@ A Blazor Component library that adds a simple to use camera-streaming functional
 ## Features
   - Stream cameras in a html `<video>` element
   - Retrieve each frame of the stream on a callback
-  - Get a list of all avaliable cameras
+  - Get a list of all avaliable cameras (including whether it's a front or rear camera, if the browser reports it)
+  - Prefer the front or rear camera (e.g. on phones)
   - Ask the user for access to cameras
   - Get the currently streamed frame
 
@@ -91,6 +92,7 @@ If you want a to use most of the features of the component, it would look more l
                 OnFrame="OnFrameHandler"
                 Style="width: 480px; height: 270px;"
                 CameraID="@cameraId"
+                FacingMode="CameraFacingMode.Environment"
                 Autostart />
 ```
 
@@ -154,6 +156,10 @@ In the code above I use the `Style` parameter to set the display size of the str
 
 This is the deviceId that is used by default if no other id is specified (otherwise the deviceId is given as a parameter with the `StartAsync()` method.
 
+**FacingMode**
+
+The preferred direction of the camera, e.g. `CameraFacingMode.Environment` for the rear camera or `CameraFacingMode.User` for the front camera of a phone. It's only used if no camera-id is specified, and if the device has no camera facing this direction (e.g. a laptop), another camera is used. Changes to this parameter are applied on reload.
+
 **Autostart**
 
 This parameter starts the stream on Reload automatically. This is either triggered when the component is rendered or the `ReloadAsync()` method is called.
@@ -165,3 +171,15 @@ If you dont want to use the `OnFrame`-Callback, you can receive frames individua
 ```csharp
 string imageData = await CameraStreamerReference.GetCurrentFrameAsync();
 ```
+
+---
+
+To let the user choose a camera, you can get a list of all cameras with the `GetCameraDevicesAsync`-Method and switch to one with `ChangeCameraAsync`:
+
+```csharp
+MediaDeviceInfoModel[] cameras = await CameraStreamerReference.GetCameraDevicesAsync();
+
+await CameraStreamerReference.ChangeCameraAsync(cameras[0].DeviceId);
+```
+
+Each camera has a `DeviceId`, a `Label` (its name) and a `FacingMode`. Keep in mind that browsers only provide the names and ids after the user granted access to the camera (see `GetCameraAccessAsync`). The `FacingMode` is `null` if the browser doesn't report it, which is usually the case for desktop webcams and in browsers that don't support it (e.g. Firefox).
